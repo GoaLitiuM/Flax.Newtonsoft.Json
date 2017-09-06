@@ -9,7 +9,4 @@
   <ItemGroup>
     <None Remove="BenchmarkDotNet.Artifacts\**" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Newtonsoft.Json.Tests\Newtonsoft.Json.Tests.csproj" />
-  </ItemGroup>
 </Project>

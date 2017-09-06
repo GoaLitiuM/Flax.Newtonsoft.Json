@@ -32,7 +32,7 @@ using System.Runtime.Serialization;
 
 namespace Newtonsoft.Json.Serialization
 {
-    internal class JsonSerializerProxy : JsonSerializer
+    public class JsonSerializerProxy : JsonSerializer
     {
         private readonly JsonSerializerInternalReader _serializerReader;
         private readonly JsonSerializerInternalWriter _serializerWriter;
@@ -236,7 +236,7 @@ namespace Newtonsoft.Json.Serialization
                 return _serializerWriter;
             }
         }
-
+        
         public JsonSerializerProxy(JsonSerializerInternalReader serializerReader)
         {
             ValidationUtils.ArgumentNotNull(serializerReader, nameof(serializerReader));

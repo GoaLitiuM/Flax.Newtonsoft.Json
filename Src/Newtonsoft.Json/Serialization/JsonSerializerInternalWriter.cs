@@ -46,12 +46,17 @@ using System.Linq;
 
 namespace Newtonsoft.Json.Serialization
 {
-    internal class JsonSerializerInternalWriter : JsonSerializerInternalBase
+    public class JsonSerializerInternalWriter : JsonSerializerInternalBase
     {
         private Type _rootType;
         private int _rootLevel;
         private readonly List<object> _serializeStack = new List<object>();
 
+        /// <summary>
+        /// Gets the size of the serialize stack (amount of the objects serialized in the hierachy before the current).
+        /// </summary>
+        public int SerializeStackSize => _serializeStack.Count;
+        
         public JsonSerializerInternalWriter(JsonSerializer serializer)
             : base(serializer)
         {

@@ -49,7 +49,7 @@ using System.Linq;
 
 namespace Newtonsoft.Json.Serialization
 {
-    internal class JsonSerializerInternalReader : JsonSerializerInternalBase
+    public class JsonSerializerInternalReader : JsonSerializerInternalBase
     {
         internal enum PropertyPresence
         {

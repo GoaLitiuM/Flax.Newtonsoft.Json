@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -31,7 +31,7 @@ using Newtonsoft.Json.Utilities;
 
 namespace Newtonsoft.Json.Serialization
 {
-    internal abstract class JsonSerializerInternalBase
+    public abstract class JsonSerializerInternalBase
     {
         private class ReferenceEqualsEqualityComparer : IEqualityComparer<object>
         {
