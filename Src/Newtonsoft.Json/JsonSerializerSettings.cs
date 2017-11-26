@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -29,7 +29,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json.Serialization;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 
 namespace Newtonsoft.Json
 {
@@ -47,7 +49,9 @@ namespace Newtonsoft.Json
         internal const ConstructorHandling DefaultConstructorHandling = ConstructorHandling.Default;
         internal const TypeNameHandling DefaultTypeNameHandling = TypeNameHandling.None;
         internal const MetadataPropertyHandling DefaultMetadataPropertyHandling = MetadataPropertyHandling.Default;
+#if HAVE_RUNTIME_SERIALIZATION
         internal static readonly StreamingContext DefaultContext;
+#endif
 
         internal const Formatting DefaultFormatting = Formatting.None;
         internal const DateFormatHandling DefaultDateFormatHandling = DateFormatHandling.IsoDateFormat;
@@ -81,7 +85,9 @@ namespace Newtonsoft.Json
         internal ObjectCreationHandling? _objectCreationHandling;
         internal MissingMemberHandling? _missingMemberHandling;
         internal ReferenceLoopHandling? _referenceLoopHandling;
+#if HAVE_RUNTIME_SERIALIZATION
         internal StreamingContext? _context;
+#endif
         internal ConstructorHandling? _constructorHandling;
         internal TypeNameHandling? _typeNameHandling;
         internal MetadataPropertyHandling? _metadataPropertyHandling;
@@ -220,26 +226,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <value>The equality comparer.</value>
         public IEqualityComparer EqualityComparer { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="IReferenceResolver"/> used by the serializer when resolving references.
-        /// </summary>
-        /// <value>The reference resolver.</value>
-        [Obsolete("ReferenceResolver property is obsolete. Use the ReferenceResolverProvider property to set the IReferenceResolver: settings.ReferenceResolverProvider = () => resolver")]
-        public IReferenceResolver ReferenceResolver
-        {
-            get
-            {
-                return ReferenceResolverProvider?.Invoke();
-            }
-            set
-            {
-                ReferenceResolverProvider = (value != null)
-                    ? () => value
-                    : (Func<IReferenceResolver>)null;
-            }
-        }
-
+        
         /// <summary>
         /// Gets or sets a function that creates the <see cref="IReferenceResolver"/> used by the serializer when resolving references.
         /// </summary>
@@ -251,32 +238,7 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <value>The trace writer.</value>
         public ITraceWriter TraceWriter { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
-        /// </summary>
-        /// <value>The binder.</value>
-        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
-        public SerializationBinder Binder
-        {
-            get
-            {
-                if (SerializationBinder == null)
-                {
-                    return null;
-                }
-
-                SerializationBinderAdapter adapter = SerializationBinder as SerializationBinderAdapter;
-                if (adapter != null)
-                {
-                    return adapter.SerializationBinder;
-                }
-
-                throw new InvalidOperationException("Cannot get SerializationBinder because an ISerializationBinder was previously set.");
-            }
-            set { SerializationBinder = value == null ? null : new SerializationBinderAdapter(value); }
-        }
-
+        
         /// <summary>
         /// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
         /// </summary>
@@ -289,6 +251,7 @@ namespace Newtonsoft.Json
         /// <value>The error handler called during serialization and deserialization.</value>
         public EventHandler<ErrorEventArgs> Error { get; set; }
 
+#if HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Gets or sets the <see cref="StreamingContext"/> used by the serializer when invoking serialization callback methods.
         /// </summary>
@@ -298,6 +261,7 @@ namespace Newtonsoft.Json
             get { return _context ?? DefaultContext; }
             set { _context = value; }
         }
+#endif
 
         /// <summary>
         /// Gets or sets how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatted when writing JSON text,
@@ -419,7 +383,9 @@ namespace Newtonsoft.Json
 
         static JsonSerializerSettings()
         {
+#if HAVE_RUNTIME_SERIALIZATION
             DefaultContext = new StreamingContext();
+#endif
             DefaultCulture = CultureInfo.InvariantCulture;
         }
 

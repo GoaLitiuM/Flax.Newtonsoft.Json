@@ -26,9 +26,11 @@
 using System;
 using System.Collections;
 using System.Globalization;
-using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json.Utilities;
+#if HAVE_RUNTIME_SERIALIZATION
+using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization;
+#endif
 
 namespace Newtonsoft.Json.Serialization
 {
@@ -121,13 +123,6 @@ namespace Newtonsoft.Json.Serialization
             set { _serializer.MetadataPropertyHandling = value; }
         }
 
-        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
-        public override FormatterAssemblyStyle TypeNameAssemblyFormat
-        {
-            get { return _serializer.TypeNameAssemblyFormat; }
-            set { _serializer.TypeNameAssemblyFormat = value; }
-        }
-
         public override TypeNameAssemblyFormatHandling TypeNameAssemblyFormatHandling
         {
             get { return _serializer.TypeNameAssemblyFormatHandling; }
@@ -139,25 +134,20 @@ namespace Newtonsoft.Json.Serialization
             get { return _serializer.ConstructorHandling; }
             set { _serializer.ConstructorHandling = value; }
         }
-
-        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
-        public override SerializationBinder Binder
-        {
-            get { return _serializer.Binder; }
-            set { _serializer.Binder = value; }
-        }
-
+        
         public override ISerializationBinder SerializationBinder
         {
             get { return _serializer.SerializationBinder; }
             set { _serializer.SerializationBinder = value; }
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         public override StreamingContext Context
         {
             get { return _serializer.Context; }
             set { _serializer.Context = value; }
         }
+#endif
 
         public override Formatting Formatting
         {

@@ -346,7 +346,7 @@ namespace Newtonsoft.Json.Schema
                             }
                         }
                         break;
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
                     case JsonContractType.Serializable:
                         CurrentSchema.Type = AddNullType(JsonSchemaType.Object, valueRequired);
                         CurrentSchema.Id = GetTypeId(type, false);
@@ -411,7 +411,7 @@ namespace Newtonsoft.Json.Schema
             }
         }
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
         private void GenerateISerializableContract(Type type, JsonISerializableContract contract)
         {
             CurrentSchema.AllowAdditionalProperties = true;

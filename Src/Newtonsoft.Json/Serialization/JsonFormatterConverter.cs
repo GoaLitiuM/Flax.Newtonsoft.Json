@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 
 // Copyright (c) 2007 James Newton-King
 //
@@ -28,8 +28,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Reflection;
-using System.Runtime.Serialization;
 using Newtonsoft.Json.Utilities;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;

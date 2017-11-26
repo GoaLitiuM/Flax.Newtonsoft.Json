@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -38,7 +38,9 @@ using Newtonsoft.Json.Utilities.LinqBridge;
 #else
 using System.Linq;
 #endif
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 
 namespace Newtonsoft.Json.Serialization
 {
@@ -93,7 +95,7 @@ namespace Newtonsoft.Json.Serialization
         }
 #endif
 
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
         public static DataContractAttribute GetDataContractAttribute(Type type)
         {
             // DataContractAttribute does not have inheritance
@@ -112,7 +114,7 @@ namespace Newtonsoft.Json.Serialization
 
             return null;
         }
-
+        
         public static DataMemberAttribute GetDataMemberAttribute(MemberInfo memberInfo)
         {
             // DataMemberAttribute does not have inheritance
@@ -157,7 +159,7 @@ namespace Newtonsoft.Json.Serialization
                 return objectAttribute.MemberSerialization;
             }
 
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
             DataContractAttribute dataContractAttribute = GetDataContractAttribute(objectType);
             if (dataContractAttribute != null)
             {

@@ -29,11 +29,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization.Formatters;
+#endif
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Utilities;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 
 namespace Newtonsoft.Json
@@ -59,7 +63,9 @@ namespace Newtonsoft.Json
         internal ITraceWriter _traceWriter;
         internal IEqualityComparer _equalityComparer;
         internal ISerializationBinder _serializationBinder;
+#if HAVE_RUNTIME_SERIALIZATION
         internal StreamingContext _context;
+#endif
         private IReferenceResolver _referenceResolver;
 
         private Formatting? _formatting;
@@ -97,44 +103,7 @@ namespace Newtonsoft.Json
                 _referenceResolver = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
-        /// </summary>
-        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
-        public virtual SerializationBinder Binder
-        {
-            get
-            {
-                if (_serializationBinder == null)
-                {
-                    return null;
-                }
-
-                if (_serializationBinder is SerializationBinder legacySerializationBinder)
-                {
-                    return legacySerializationBinder;
-                }
-
-                SerializationBinderAdapter adapter = _serializationBinder as SerializationBinderAdapter;
-                if (adapter != null)
-                {
-                    return adapter.SerializationBinder;
-                }
-
-                throw new InvalidOperationException("Cannot get SerializationBinder because an ISerializationBinder was previously set.");
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value), "Serialization binder cannot be null.");
-                }
-
-                _serializationBinder = value as ISerializationBinder ?? new SerializationBinderAdapter(value);
-            }
-        }
-
+        
         /// <summary>
         /// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
         /// </summary>
@@ -193,26 +162,7 @@ namespace Newtonsoft.Json
                 _typeNameHandling = value;
             }
         }
-
-        /// <summary>
-        /// Gets or sets how a type name assembly is written and resolved by the serializer.
-        /// </summary>
-        /// <value>The type name assembly format.</value>
-        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
-        public virtual FormatterAssemblyStyle TypeNameAssemblyFormat
-        {
-            get { return (FormatterAssemblyStyle)_typeNameAssemblyFormatHandling; }
-            set
-            {
-                if (value < FormatterAssemblyStyle.Simple || value > FormatterAssemblyStyle.Full)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                }
-
-                _typeNameAssemblyFormatHandling = (TypeNameAssemblyFormatHandling)value;
-            }
-        }
-
+        
         /// <summary>
         /// Gets or sets how a type name assembly is written and resolved by the serializer.
         /// </summary>
@@ -397,6 +347,7 @@ namespace Newtonsoft.Json
             set { _contractResolver = value ?? DefaultContractResolver.Instance; }
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Gets or sets the <see cref="StreamingContext"/> used by the serializer when invoking serialization callback methods.
         /// </summary>
@@ -406,6 +357,7 @@ namespace Newtonsoft.Json
             get { return _context; }
             set { _context = value; }
         }
+#endif
 
         /// <summary>
         /// Indicates how JSON text output is formatted.
@@ -544,8 +496,10 @@ namespace Newtonsoft.Json
             _constructorHandling = JsonSerializerSettings.DefaultConstructorHandling;
             _typeNameHandling = JsonSerializerSettings.DefaultTypeNameHandling;
             _metadataPropertyHandling = JsonSerializerSettings.DefaultMetadataPropertyHandling;
+#if HAVE_RUNTIME_SERIALIZATION
             _context = JsonSerializerSettings.DefaultContext;
             _serializationBinder = DefaultSerializationBinder.Instance;
+#endif
 
             _culture = JsonSerializerSettings.DefaultCulture;
             _contractResolver = DefaultContractResolver.Instance;
@@ -682,10 +636,12 @@ namespace Newtonsoft.Json
             {
                 serializer.ConstructorHandling = settings.ConstructorHandling;
             }
+#if HAVE_RUNTIME_SERIALIZATION
             if (settings._context != null)
             {
                 serializer.Context = settings.Context;
             }
+#endif
             if (settings._checkAdditionalContent != null)
             {
                 serializer._checkAdditionalContent = settings._checkAdditionalContent;

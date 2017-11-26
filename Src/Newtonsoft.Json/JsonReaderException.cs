@@ -25,7 +25,9 @@
 
 using System;
 using System.Globalization;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using Newtonsoft.Json.Utilities;
 
 namespace Newtonsoft.Json
@@ -84,7 +86,7 @@ namespace Newtonsoft.Json
         {
         }
 
-#if HAVE_BINARY_EXCEPTION_SERIALIZATION
+#if HAVE_BINARY_EXCEPTION_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonReaderException"/> class.
         /// </summary>

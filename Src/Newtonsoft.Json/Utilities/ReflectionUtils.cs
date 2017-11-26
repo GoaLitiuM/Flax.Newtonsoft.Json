@@ -31,8 +31,10 @@ using System.Numerics;
 using System.Reflection;
 using System.Collections;
 using System.Globalization;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters;
+#endif
 using System.Text;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;

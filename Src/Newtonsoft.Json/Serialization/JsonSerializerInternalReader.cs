@@ -37,7 +37,9 @@ using System.Globalization;
 using System.Numerics;
 #endif
 using System.Reflection;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Utilities;
 #if !HAVE_LINQ
@@ -528,6 +530,7 @@ namespace Newtonsoft.Json.Serialization
                                 throw JsonSerializationException.Create(reader, "Cannot preserve reference to readonly dictionary, or dictionary created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                             }
 
+#if HAVE_RUNTIME_SERIALIZATION
                             if (contract.OnSerializingCallbacks.Count > 0)
                             {
                                 throw JsonSerializationException.Create(reader, "Cannot call OnSerializing on readonly dictionary, or dictionary created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
@@ -537,6 +540,7 @@ namespace Newtonsoft.Json.Serialization
                             {
                                 throw JsonSerializationException.Create(reader, "Cannot call OnError on readonly list, or dictionary created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                             }
+#endif
 
                             if (!dictionaryContract.HasParameterizedCreatorInternal)
                             {
@@ -571,7 +575,7 @@ namespace Newtonsoft.Json.Serialization
                     JsonDynamicContract dynamicContract = (JsonDynamicContract)contract;
                     return CreateDynamic(reader, dynamicContract, member, id);
 #endif
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
                 case JsonContractType.Serializable:
                     JsonISerializableContract serializableContract = (JsonISerializableContract)contract;
                     return CreateISerializable(reader, serializableContract, member, id);
@@ -860,6 +864,7 @@ namespace Newtonsoft.Json.Serialization
                         throw JsonSerializationException.Create(reader, "Cannot preserve reference to array or readonly list, or list created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                     }
 
+#if HAVE_RUNTIME_SERIALIZATION
                     if (contract.OnSerializingCallbacks.Count > 0)
                     {
                         throw JsonSerializationException.Create(reader, "Cannot call OnSerializing on an array or readonly list, or list created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
@@ -869,6 +874,7 @@ namespace Newtonsoft.Json.Serialization
                     {
                         throw JsonSerializationException.Create(reader, "Cannot call OnError on an array or readonly list, or list created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                     }
+#endif
 
                     if (!arrayContract.HasParameterizedCreatorInternal && !arrayContract.IsArray)
                     {
@@ -1285,7 +1291,9 @@ namespace Newtonsoft.Json.Serialization
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
 
+#if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnDeserializing(value, Serializer._context);
+#endif
         }
 
         private void OnDeserialized(JsonReader reader, JsonContract contract, object value)
@@ -1295,7 +1303,9 @@ namespace Newtonsoft.Json.Serialization
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
 
+#if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnDeserialized(value, Serializer._context);
+#endif
         }
 
         private object PopulateDictionary(IDictionary dictionary, JsonReader reader, JsonDictionaryContract contract, JsonProperty containerProperty, string id)
@@ -1679,7 +1689,7 @@ namespace Newtonsoft.Json.Serialization
             return underlyingList;
         }
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
         private object CreateISerializable(JsonReader reader, JsonISerializableContract contract, JsonProperty member, string id)
         {
             Type objectType = contract.UnderlyingType;

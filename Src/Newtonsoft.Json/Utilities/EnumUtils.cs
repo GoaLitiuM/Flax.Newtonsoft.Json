@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -26,7 +26,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
@@ -51,7 +53,7 @@ namespace Newtonsoft.Json.Utilities
                 string n1 = f.Name;
                 string n2;
 
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
                 n2 = f.GetCustomAttributes(typeof(EnumMemberAttribute), true)
                     .Cast<EnumMemberAttribute>()
                     .Select(a => a.Value)

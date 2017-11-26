@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -36,7 +36,9 @@ using System.Dynamic;
 #endif
 using System.Globalization;
 using System.Reflection;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 #if HAVE_CAS
 using System.Security.Permissions;
 #endif
@@ -223,7 +225,7 @@ namespace Newtonsoft.Json.Serialization
 
             if (memberSerialization != MemberSerialization.Fields)
             {
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
                 DataContractAttribute dataContractAttribute = JsonTypeReflector.GetDataContractAttribute(objectType);
 #endif
 
@@ -254,7 +256,7 @@ namespace Newtonsoft.Json.Serialization
                             {
                                 serializableMembers.Add(member);
                             }
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
                             else if (dataContractAttribute != null && JsonTypeReflector.GetAttribute<DataMemberAttribute>(member) != null)
                             {
                                 serializableMembers.Add(member);
@@ -361,7 +363,7 @@ namespace Newtonsoft.Json.Serialization
                 }
                 else if (contract.MemberSerialization == MemberSerialization.Fields)
                 {
-#if HAVE_BINARY_FORMATTER
+#if HAVE_BINARY_FORMATTER && HAVE_RUNTIME_SERIALIZATION
                     // mimic DataContractSerializer behaviour when populating fields by overriding default creator to create an uninitialized object
                     // note that this is only possible when the application is fully trusted so fall back to using the default constructor (if available) in partial trust
                     if (JsonTypeReflector.FullyTrusted)
@@ -752,7 +754,7 @@ namespace Newtonsoft.Json.Serialization
             {
                 contract.IsReference = containerAttribute._isReference;
             }
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
             else
             {
                 DataContractAttribute dataContractAttribute = JsonTypeReflector.GetDataContractAttribute(contract.NonNullableUnderlyingType);
@@ -778,9 +780,12 @@ namespace Newtonsoft.Json.Serialization
                                                     ReflectionUtils.GetDefaultConstructor(contract.CreatedType) == null);
             }
 
+#if HAVE_RUNTIME_SERIALIZATION
             ResolveCallbackMethods(contract, contract.NonNullableUnderlyingType);
+#endif
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         private void ResolveCallbackMethods(JsonContract contract, Type t)
         {
             List<SerializationCallback> onSerializing;
@@ -873,6 +878,7 @@ namespace Newtonsoft.Json.Serialization
                         onDeserialized.Add(JsonContract.CreateSerializationCallback(method));
                         currentOnDeserialized = method;
                     }
+
                     if (IsValidCallback(method, parameters, typeof(OnErrorAttribute), currentOnError, ref prevAttributeType))
                     {
                         onError = onError ?? new List<SerializationErrorCallback>();
@@ -882,6 +888,7 @@ namespace Newtonsoft.Json.Serialization
                 }
             }
         }
+#endif
 
         private static bool IsConcurrentOrObservableCollection(Type t)
         {
@@ -1067,7 +1074,7 @@ namespace Newtonsoft.Json.Serialization
             return contract;
         }
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Creates a <see cref="JsonISerializableContract"/> for the given type.
         /// </summary>
@@ -1181,7 +1188,7 @@ namespace Newtonsoft.Json.Serialization
                 return CreateStringContract(objectType);
             }
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
             if (!IgnoreSerializableInterface && typeof(ISerializable).IsAssignableFrom(t))
             {
                 return CreateISerializableContract(objectType);
@@ -1271,6 +1278,7 @@ namespace Newtonsoft.Json.Serialization
                 throw new JsonException("Serialization Callback '{1}' in type '{0}' must return void.".FormatWith(CultureInfo.InvariantCulture, GetClrTypeFullName(method.DeclaringType), method));
             }
 
+#if HAVE_RUNTIME_SERIALIZATION
             if (attributeType == typeof(OnErrorAttribute))
             {
                 if (parameters == null || parameters.Length != 2 || parameters[0].ParameterType != typeof(StreamingContext) || parameters[1].ParameterType != typeof(ErrorContext))
@@ -1285,6 +1293,7 @@ namespace Newtonsoft.Json.Serialization
                     throw new JsonException("Serialization Callback '{1}' in type '{0}' must have a single parameter of type '{2}'.".FormatWith(CultureInfo.InvariantCulture, GetClrTypeFullName(method.DeclaringType), method, typeof(StreamingContext)));
                 }
             }
+#endif
 
             prevAttributeType = attributeType;
 
@@ -1416,7 +1425,7 @@ namespace Newtonsoft.Json.Serialization
 
         private void SetPropertySettingsFromAttributes(JsonProperty property, object attributeProvider, string name, Type declaringType, MemberSerialization memberSerialization, out bool allowNonPublicAccess)
         {
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
             DataContractAttribute dataContractAttribute = JsonTypeReflector.GetDataContractAttribute(declaringType);
 
             MemberInfo memberInfo = attributeProvider as MemberInfo;
@@ -1442,7 +1451,7 @@ namespace Newtonsoft.Json.Serialization
                 mappedName = propertyAttribute.PropertyName;
                 hasSpecifiedName = true;
             }
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
             else if (dataMemberAttribute?.Name != null)
             {
                 mappedName = dataMemberAttribute.Name;
@@ -1511,7 +1520,7 @@ namespace Newtonsoft.Json.Serialization
                 property.ItemConverter = null;
                 property.ItemReferenceLoopHandling = null;
                 property.ItemTypeNameHandling = null;
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
                 if (dataMemberAttribute != null)
                 {
                     property._required = (dataMemberAttribute.IsRequired) ? Required.AllowNull : Required.Default;
@@ -1543,7 +1552,7 @@ namespace Newtonsoft.Json.Serialization
             {
                 bool hasIgnoreDataMemberAttribute = false;
 
-#if HAVE_IGNORE_DATA_MEMBER_ATTRIBUTE
+#if HAVE_IGNORE_DATA_MEMBER_ATTRIBUTE && HAVE_RUNTIME_SERIALIZATION
                 hasIgnoreDataMemberAttribute = (JsonTypeReflector.GetAttribute<IgnoreDataMemberAttribute>(attributeProvider) != null);
 #endif
 
