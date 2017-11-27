@@ -23,10 +23,10 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if HAVE_RUNTIME_SERIALIZATION
-
 using System;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using System.Reflection;
 using System.Globalization;
 using Newtonsoft.Json.Utilities;
@@ -39,7 +39,9 @@ namespace Newtonsoft.Json.Serialization
     /// </summary>
     public class DefaultSerializationBinder :
 #pragma warning disable 618
+#if HAVE_RUNTIME_SERIALIZATION
         SerializationBinder,
+#endif
 #pragma warning restore 618
         ISerializationBinder
     {
@@ -81,8 +83,9 @@ namespace Newtonsoft.Json.Serialization
                 {
                     // will find assemblies loaded with Assembly.LoadFile outside of the main directory
                     Assembly[] loadedAssemblies = AppDomain.CurrentDomain.GetAssemblies();
-                    foreach (Assembly a in loadedAssemblies)
+                    for (var i = 0; i < loadedAssemblies.Length; i++)
                     {
+                        Assembly a = loadedAssemblies[i];
                         // check for both full name or partial name match
                         if (a.FullName == assemblyName || a.GetName().Name == assemblyName)
                         {
@@ -188,7 +191,11 @@ namespace Newtonsoft.Json.Serialization
         /// <returns>
         /// The type of the object the formatter creates a new instance of.
         /// </returns>
-        public override Type BindToType(string assemblyName, string typeName)
+        public
+#if HAVE_RUNTIME_SERIALIZATION
+        override
+#endif
+            Type BindToType(string assemblyName, string typeName)
         {
             return GetTypeByName(new TypeNameKey(assemblyName, typeName));
         }
@@ -200,7 +207,7 @@ namespace Newtonsoft.Json.Serialization
         /// <param name="assemblyName">Specifies the <see cref="Assembly"/> name of the serialized object.</param>
         /// <param name="typeName">Specifies the <see cref="System.Type"/> name of the serialized object.</param>
         public
-#if HAVE_SERIALIZATION_BINDER_BIND_TO_NAME
+#if HAVE_SERIALIZATION_BINDER_BIND_TO_NAME && HAVE_RUNTIME_SERIALIZATION
         override
 #endif
         void BindToName(Type serializedType, out string assemblyName, out string typeName)
@@ -215,4 +222,3 @@ namespace Newtonsoft.Json.Serialization
         }
     }
 }
-#endif

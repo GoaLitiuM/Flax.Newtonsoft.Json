@@ -496,9 +496,9 @@ namespace Newtonsoft.Json
             _constructorHandling = JsonSerializerSettings.DefaultConstructorHandling;
             _typeNameHandling = JsonSerializerSettings.DefaultTypeNameHandling;
             _metadataPropertyHandling = JsonSerializerSettings.DefaultMetadataPropertyHandling;
+            _serializationBinder = DefaultSerializationBinder.Instance;
 #if HAVE_RUNTIME_SERIALIZATION
             _context = JsonSerializerSettings.DefaultContext;
-            _serializationBinder = DefaultSerializationBinder.Instance;
 #endif
 
             _culture = JsonSerializerSettings.DefaultCulture;

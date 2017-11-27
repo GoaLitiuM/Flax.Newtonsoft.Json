@@ -187,17 +187,6 @@ namespace Newtonsoft.Json
         /// Gets or sets how a type name assembly is written and resolved by the serializer.
         /// </summary>
         /// <value>The type name assembly format.</value>
-        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
-        public FormatterAssemblyStyle TypeNameAssemblyFormat
-        {
-            get { return (FormatterAssemblyStyle)TypeNameAssemblyFormatHandling; }
-            set { TypeNameAssemblyFormatHandling = (TypeNameAssemblyFormatHandling)value; }
-        }
-
-        /// <summary>
-        /// Gets or sets how a type name assembly is written and resolved by the serializer.
-        /// </summary>
-        /// <value>The type name assembly format.</value>
         public TypeNameAssemblyFormatHandling TypeNameAssemblyFormatHandling
         {
             get { return _typeNameAssemblyFormatHandling ?? DefaultTypeNameAssemblyFormatHandling; }
