@@ -510,10 +510,13 @@ namespace Newtonsoft.Json.Serialization
             get
             {
 #if !(PORTABLE40 || PORTABLE || DOTNET)
+
+#if HAVE_REFLECTION_EMIT
                 if (DynamicCodeGeneration)
                 {
                     return DynamicReflectionDelegateFactory.Instance;
                 }
+#endif
 
                 return LateBoundReflectionDelegateFactory.Instance;
 #else
