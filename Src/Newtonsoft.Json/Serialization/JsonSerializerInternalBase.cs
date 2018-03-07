@@ -51,16 +51,20 @@ namespace Newtonsoft.Json.Serialization
         private BidirectionalDictionary<string, object> _mappings;
 
         internal readonly JsonSerializer Serializer;
-        internal readonly ITraceWriter TraceWriter;
-        protected JsonSerializerProxy InternalSerializer;
+#if HAVE_TRACE_WRITER
+		internal readonly ITraceWriter TraceWriter;
+#endif
+		protected JsonSerializerProxy InternalSerializer;
 
         protected JsonSerializerInternalBase(JsonSerializer serializer)
         {
             ValidationUtils.ArgumentNotNull(serializer, nameof(serializer));
 
             Serializer = serializer;
-            TraceWriter = serializer.TraceWriter;
-        }
+#if HAVE_TRACE_WRITER
+			TraceWriter = serializer.TraceWriter;
+#endif
+		}
 
         internal BidirectionalDictionary<string, object> DefaultReferenceMappings
         {
@@ -120,7 +124,8 @@ namespace Newtonsoft.Json.Serialization
         {
             ErrorContext errorContext = GetErrorContext(currentObject, keyValue, path, ex);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Error && !errorContext.Traced)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Error && !errorContext.Traced)
             {
                 // only write error once
                 errorContext.Traced = true;
@@ -141,7 +146,7 @@ namespace Newtonsoft.Json.Serialization
 
                 TraceWriter.Trace(TraceLevel.Error, message, ex);
             }
-
+#endif
 #if HAVE_RUNTIME_SERIALIZATION
             // attribute method is non-static so don't invoke if no object
             if (contract != null && currentObject != null)
@@ -150,7 +155,7 @@ namespace Newtonsoft.Json.Serialization
             }
 #endif
 
-            if (!errorContext.Handled)
+			if (!errorContext.Handled)
             {
                 Serializer.OnError(new ErrorEventArgs(currentObject, errorContext));
             }

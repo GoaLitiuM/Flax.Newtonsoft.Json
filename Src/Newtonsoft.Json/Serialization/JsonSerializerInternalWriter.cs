@@ -335,19 +335,21 @@ namespace Newtonsoft.Json.Serialization
                     case ReferenceLoopHandling.Error:
                         throw JsonSerializationException.Create(null, writer.ContainerPath, message, null);
                     case ReferenceLoopHandling.Ignore:
-                        if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+						if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                         {
                             TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, writer.Path, message + ". Skipping serializing self referenced value."), null);
                         }
-
-                        return false;
+#endif
+						return false;
                     case ReferenceLoopHandling.Serialize:
-                        if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+						if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                         {
                             TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, writer.Path, message + ". Serializing self referenced value."), null);
                         }
-
-                        return true;
+#endif
+						return true;
                 }
             }
 
@@ -358,12 +360,14 @@ namespace Newtonsoft.Json.Serialization
         {
             string reference = GetReference(writer, value);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Writing object reference to Id '{0}' for {1}.".FormatWith(CultureInfo.InvariantCulture, reference, value.GetType())), null);
             }
+#endif
 
-            writer.WriteStartObject();
+			writer.WriteStartObject();
             writer.WritePropertyName(JsonTypeReflector.RefPropertyName, false);
             writer.WriteValue(reference);
             writer.WriteEndObject();
@@ -424,27 +428,29 @@ namespace Newtonsoft.Json.Serialization
 
         private void OnSerializing(JsonWriter writer, JsonContract contract, object value)
         {
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Started serializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
-
+#endif
 #if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnSerializing(value, Serializer._context);
 #endif
-        }
+		}
 
         private void OnSerialized(JsonWriter writer, JsonContract contract, object value)
         {
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Finished serializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
-
+#endif
 #if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnSerialized(value, Serializer._context);
 #endif
-        }
+		}
 
         private void SerializeObject(JsonWriter writer, object value, JsonObjectContract contract, JsonProperty member, JsonContainerContract collectionContract, JsonProperty containerProperty)
         {
@@ -602,12 +608,14 @@ namespace Newtonsoft.Json.Serialization
         {
             string reference = GetReference(writer, value);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, writer.Path, "Writing object reference Id '{0}' for {1}.".FormatWith(CultureInfo.InvariantCulture, reference, type)), null);
             }
+#endif
 
-            writer.WritePropertyName(JsonTypeReflector.IdPropertyName, false);
+			writer.WritePropertyName(JsonTypeReflector.IdPropertyName, false);
             writer.WriteValue(reference);
         }
 
@@ -615,12 +623,14 @@ namespace Newtonsoft.Json.Serialization
         {
             string typeName = ReflectionUtils.GetTypeName(type, Serializer._typeNameAssemblyFormatHandling, Serializer._serializationBinder);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, writer.Path, "Writing type name '{0}' for {1}.".FormatWith(CultureInfo.InvariantCulture, typeName, type)), null);
             }
+#endif
 
-            writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
+			writer.WritePropertyName(JsonTypeReflector.TypePropertyName, false);
             writer.WriteValue(typeName);
         }
 
@@ -654,19 +664,23 @@ namespace Newtonsoft.Json.Serialization
 
                 _serializeStack.Add(value);
 
-                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                 {
                     TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Started serializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, value.GetType(), converter.GetType())), null);
                 }
+#endif
 
-                converter.WriteJson(writer, value, GetInternalSerializer());
+				converter.WriteJson(writer, value, GetInternalSerializer());
 
-                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                 {
                     TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Finished serializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, value.GetType(), converter.GetType())), null);
                 }
+#endif
 
-                _serializeStack.RemoveAt(_serializeStack.Count - 1);
+				_serializeStack.RemoveAt(_serializeStack.Count - 1);
             }
         }
 
@@ -1207,12 +1221,14 @@ namespace Newtonsoft.Json.Serialization
 
             bool shouldSerialize = property.ShouldSerialize(target);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, writer.Path, "ShouldSerialize result for property '{0}' on {1}: {2}".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType, shouldSerialize)), null);
             }
+#endif
 
-            return shouldSerialize;
+			return shouldSerialize;
         }
 
         private bool IsSpecified(JsonWriter writer, JsonProperty property, object target)
@@ -1224,12 +1240,14 @@ namespace Newtonsoft.Json.Serialization
 
             bool isSpecified = property.GetIsSpecified(target);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, writer.Path, "IsSpecified result for property '{0}' on {1}: {2}".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType, isSpecified)), null);
             }
+#endif
 
-            return isSpecified;
+			return isSpecified;
         }
     }
 }

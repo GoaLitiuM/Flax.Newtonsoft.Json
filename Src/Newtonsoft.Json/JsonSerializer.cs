@@ -60,7 +60,9 @@ namespace Newtonsoft.Json
         internal MetadataPropertyHandling _metadataPropertyHandling;
         internal JsonConverterCollection _converters;
         internal IContractResolver _contractResolver;
-        internal ITraceWriter _traceWriter;
+#if HAVE_TRACE_WRITER
+		internal ITraceWriter _traceWriter;
+#endif
         internal IEqualityComparer _equalityComparer;
         internal ISerializationBinder _serializationBinder;
 #if HAVE_RUNTIME_SERIALIZATION
@@ -121,21 +123,23 @@ namespace Newtonsoft.Json
             }
         }
 
-        /// <summary>
-        /// Gets or sets the <see cref="ITraceWriter"/> used by the serializer when writing trace messages.
-        /// </summary>
-        /// <value>The trace writer.</value>
-        public virtual ITraceWriter TraceWriter
+#if HAVE_TRACE_WRITER
+		/// <summary>
+		/// Gets or sets the <see cref="ITraceWriter"/> used by the serializer when writing trace messages.
+		/// </summary>
+		/// <value>The trace writer.</value>
+		public virtual ITraceWriter TraceWriter
         {
             get => _traceWriter;
             set => _traceWriter = value;
         }
+#endif
 
-        /// <summary>
-        /// Gets or sets the equality comparer used by the serializer when comparing references.
-        /// </summary>
-        /// <value>The equality comparer.</value>
-        public virtual IEqualityComparer EqualityComparer
+		/// <summary>
+		/// Gets or sets the equality comparer used by the serializer when comparing references.
+		/// </summary>
+		/// <value>The equality comparer.</value>
+		public virtual IEqualityComparer EqualityComparer
         {
             get => _equalityComparer;
             set => _equalityComparer = value;
@@ -682,11 +686,13 @@ namespace Newtonsoft.Json
             {
                 serializer.ReferenceResolver = settings.ReferenceResolverProvider();
             }
-            if (settings.TraceWriter != null)
+#if HAVE_TRACE_WRITER
+			if (settings.TraceWriter != null)
             {
                 serializer.TraceWriter = settings.TraceWriter;
             }
-            if (settings.EqualityComparer != null)
+#endif
+			if (settings.EqualityComparer != null)
             {
                 serializer.EqualityComparer = settings.EqualityComparer;
             }
@@ -775,19 +781,26 @@ namespace Newtonsoft.Json
             string previousDateFormatString;
             SetupReader(reader, out previousCulture, out previousDateTimeZoneHandling, out previousDateParseHandling, out previousFloatParseHandling, out previousMaxDepth, out previousDateFormatString);
 
-            TraceJsonReader traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
-                ? CreateTraceJsonReader(reader)
-                : null;
+#if HAVE_TRACE_WRITER
+	        TraceJsonReader traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+		        ? CreateTraceJsonReader(reader)
+		        : null;
+	        var tReader = traceJsonReader ?? reader;
+#else
+			var tReader = reader;
+#endif
 
-            JsonSerializerInternalReader serializerReader = new JsonSerializerInternalReader(this);
-            serializerReader.Populate(traceJsonReader ?? reader, target);
+			JsonSerializerInternalReader serializerReader = new JsonSerializerInternalReader(this);
+            serializerReader.Populate(tReader, target);
 
-            if (traceJsonReader != null)
+#if HAVE_TRACE_WRITER
+			if (traceJsonReader != null)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, traceJsonReader.GetDeserializedJsonMessage(), null);
             }
+#endif
 
-            ResetReader(reader, previousCulture, previousDateTimeZoneHandling, previousDateParseHandling, previousFloatParseHandling, previousMaxDepth, previousDateFormatString);
+			ResetReader(reader, previousCulture, previousDateTimeZoneHandling, previousDateParseHandling, previousFloatParseHandling, previousMaxDepth, previousDateFormatString);
         }
 
         /// <summary>
@@ -849,19 +862,26 @@ namespace Newtonsoft.Json
             string previousDateFormatString;
             SetupReader(reader, out previousCulture, out previousDateTimeZoneHandling, out previousDateParseHandling, out previousFloatParseHandling, out previousMaxDepth, out previousDateFormatString);
 
-            TraceJsonReader traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+			TraceJsonReader traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? CreateTraceJsonReader(reader)
                 : null;
+	        var tReader = traceJsonReader ?? reader;
+#else
+			var tReader = reader;
+#endif
 
-            JsonSerializerInternalReader serializerReader = new JsonSerializerInternalReader(this);
-            object value = serializerReader.Deserialize(traceJsonReader ?? reader, objectType, CheckAdditionalContent);
+			JsonSerializerInternalReader serializerReader = new JsonSerializerInternalReader(this);
+            object value = serializerReader.Deserialize(tReader, objectType, CheckAdditionalContent);
 
-            if (traceJsonReader != null)
+#if HAVE_TRACE_WRITER
+			if (traceJsonReader != null)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, traceJsonReader.GetDeserializedJsonMessage(), null);
             }
+#endif
 
-            ResetReader(reader, previousCulture, previousDateTimeZoneHandling, previousDateParseHandling, previousFloatParseHandling, previousMaxDepth, previousDateFormatString);
+			ResetReader(reader, previousCulture, previousDateTimeZoneHandling, previousDateParseHandling, previousFloatParseHandling, previousMaxDepth, previousDateFormatString);
 
             return value;
         }
@@ -1025,7 +1045,8 @@ namespace Newtonsoft.Json
             SerializeInternal(jsonWriter, value, null);
         }
 
-        private TraceJsonReader CreateTraceJsonReader(JsonReader reader)
+#if HAVE_TRACE_WRITER
+		private TraceJsonReader CreateTraceJsonReader(JsonReader reader)
         {
             TraceJsonReader traceReader = new TraceJsonReader(reader);
             if (reader.TokenType != JsonToken.None)
@@ -1035,8 +1056,9 @@ namespace Newtonsoft.Json
 
             return traceReader;
         }
+#endif
 
-        internal virtual void SerializeInternal(JsonWriter jsonWriter, object value, Type objectType)
+		internal virtual void SerializeInternal(JsonWriter jsonWriter, object value, Type objectType)
         {
             ValidationUtils.ArgumentNotNull(jsonWriter, nameof(jsonWriter));
 
@@ -1090,20 +1112,27 @@ namespace Newtonsoft.Json
                 jsonWriter.DateFormatString = _dateFormatString;
             }
 
-            TraceJsonWriter traceJsonWriter = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
-                ? new TraceJsonWriter(jsonWriter)
-                : null;
+#if HAVE_TRACE_WRITER
+	        TraceJsonWriter traceJsonWriter = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+		        ? new TraceJsonWriter(jsonWriter)
+				: null;
+	        var tWriter = traceJsonWriter ?? jsonWriter;
+#else
+			var tWriter = jsonWriter;
+#endif
 
-            JsonSerializerInternalWriter serializerWriter = new JsonSerializerInternalWriter(this);
-            serializerWriter.Serialize(traceJsonWriter ?? jsonWriter, value, objectType);
+			JsonSerializerInternalWriter serializerWriter = new JsonSerializerInternalWriter(this);
+            serializerWriter.Serialize(tWriter, value, objectType);
 
-            if (traceJsonWriter != null)
+#if HAVE_TRACE_WRITER
+			if (traceJsonWriter != null)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, traceJsonWriter.GetSerializedJsonMessage(), null);
             }
+#endif
 
-            // reset writer back to previous options
-            if (previousFormatting != null)
+			// reset writer back to previous options
+			if (previousFormatting != null)
             {
                 jsonWriter.Formatting = previousFormatting.GetValueOrDefault();
             }

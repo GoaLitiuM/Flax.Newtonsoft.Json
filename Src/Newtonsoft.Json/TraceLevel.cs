@@ -1,11 +1,11 @@
-﻿
-#if !HAVE_TRACE_WRITER
+
+#if !HAVE_TRACE_WRITER && false
 using Newtonsoft.Json.Serialization;
 
 namespace Newtonsoft.Json
 {
     /// <summary>
-    /// Specifies what messages to output for the <see cref="ITraceWriter"/> class.
+    /// Specifies what messages to output for the ITraceWriter class.
     /// </summary>
     public enum TraceLevel
     {

@@ -52,11 +52,13 @@ namespace Newtonsoft.Json.Serialization
             set => _serializer.ReferenceResolver = value;
         }
 
-        public override ITraceWriter TraceWriter
+#if HAVE_TRACE_WRITER
+		public override ITraceWriter TraceWriter
         {
             get => _serializer.TraceWriter;
             set => _serializer.TraceWriter = value;
         }
+#endif
 
         public override IEqualityComparer EqualityComparer
         {

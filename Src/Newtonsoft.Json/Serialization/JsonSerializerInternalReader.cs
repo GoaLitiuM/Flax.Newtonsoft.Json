@@ -624,12 +624,14 @@ namespace Newtonsoft.Json.Serialization
 
                         newValue = Serializer.GetReferenceResolver().ResolveReference(this, reference);
 
-                        if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+						if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                         {
                             TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader, reader.Path, "Resolved object reference '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, reference, newValue.GetType())), null);
                         }
+#endif
 
-                        reader.Skip();
+						reader.Skip();
                         return true;
                     }
                 }
@@ -721,12 +723,14 @@ namespace Newtonsoft.Json.Serialization
 
                                 newValue = Serializer.GetReferenceResolver().ResolveReference(this, reference);
 
-                                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+								if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                                 {
                                     TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Resolved object reference '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, reference, newValue.GetType())), null);
                                 }
+#endif
 
-                                return true;
+								return true;
                             }
                             else
                             {
@@ -798,12 +802,14 @@ namespace Newtonsoft.Json.Serialization
                     throw JsonSerializationException.Create(reader, "Type specified in JSON '{0}' was not resolved.".FormatWith(CultureInfo.InvariantCulture, qualifiedTypeName));
                 }
 
-                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 {
                     TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Resolved type '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, qualifiedTypeName, specifiedType)), null);
                 }
+#endif
 
-                if (objectType != null
+				if (objectType != null
 #if HAVE_DYNAMIC
                     && objectType != typeof(IDynamicMetaObjectProvider)
 #endif
@@ -1024,12 +1030,14 @@ namespace Newtonsoft.Json.Serialization
 
                 if (property.SetIsSpecified != null)
                 {
-                    if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+					if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                     {
                         TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "IsSpecified for property '{0}' on {1} set to true.".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType)), null);
                     }
+#endif
 
-                    property.SetIsSpecified(target, true);
+					property.SetIsSpecified(target, true);
                 }
 
                 return true;
@@ -1117,12 +1125,14 @@ namespace Newtonsoft.Json.Serialization
         {
             try
             {
-                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 {
                     TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Read object reference Id '{0}' for {1}.".FormatWith(CultureInfo.InvariantCulture, id, value.GetType())), null);
                 }
+#endif
 
-                Serializer.GetReferenceResolver().AddReference(this, id, value);
+				Serializer.GetReferenceResolver().AddReference(this, id, value);
             }
             catch (Exception ex)
             {
@@ -1275,27 +1285,29 @@ namespace Newtonsoft.Json.Serialization
 
         private void OnDeserializing(JsonReader reader, JsonContract contract, object value)
         {
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
-
+#endif
 #if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnDeserializing(value, Serializer._context);
 #endif
-        }
+		}
 
         private void OnDeserialized(JsonReader reader, JsonContract contract, object value)
         {
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
-
+#endif
 #if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnDeserialized(value, Serializer._context);
 #endif
-        }
+		}
 
         private object PopulateDictionary(IDictionary dictionary, JsonReader reader, JsonDictionaryContract contract, JsonProperty containerProperty, string id)
         {
@@ -1680,12 +1692,12 @@ namespace Newtonsoft.Json.Serialization
 
                 throw JsonSerializationException.Create(reader, message);
             }
-
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Deserializing {0} using ISerializable constructor.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
-
+#endif
             SerializationInfo serializationInfo = new SerializationInfo(contract.UnderlyingType, new JsonFormatterConverter(this, contract, member));
 
             bool finished = false;
@@ -1888,7 +1900,8 @@ namespace Newtonsoft.Json.Serialization
 
             Type objectType = contract.UnderlyingType;
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 string parameters = string.Join(", ", contract.CreatorParameters.Select(p => p.PropertyName)
 #if !HAVE_STRING_JOIN_WITH_ENUMERABLE
@@ -1897,8 +1910,9 @@ namespace Newtonsoft.Json.Serialization
                     );
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Deserializing {0} using creator with parameters: {1}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType, parameters)), null);
             }
+#endif
 
-            List<CreatorPropertyContext> propertyContexts = ResolvePropertyAndCreatorValues(contract, containerProperty, reader, objectType);
+			List<CreatorPropertyContext> propertyContexts = ResolvePropertyAndCreatorValues(contract, containerProperty, reader, objectType);
             if (trackPresence)
             {
                 foreach (JsonProperty property in contract.Properties)
@@ -2106,19 +2120,23 @@ namespace Newtonsoft.Json.Serialization
 
         private object DeserializeConvertable(JsonConverter converter, JsonReader reader, Type objectType, object existingValue)
         {
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, objectType, converter.GetType())), null);
             }
+#endif
 
-            object value = converter.ReadJson(reader, objectType, existingValue, GetInternalSerializer());
+			object value = converter.ReadJson(reader, objectType, existingValue, GetInternalSerializer());
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, objectType, converter.GetType())), null);
             }
+#endif
 
-            return value;
+			return value;
         }
 
         private List<CreatorPropertyContext> ResolvePropertyAndCreatorValues(JsonObjectContract contract, JsonProperty containerProperty, JsonReader reader, Type objectType)
@@ -2173,12 +2191,14 @@ namespace Newtonsoft.Json.Serialization
                                 throw JsonSerializationException.Create(reader, "Unexpected end when setting {0}'s value.".FormatWith(CultureInfo.InvariantCulture, memberName));
                             }
 
-                            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+							if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                             {
                                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Could not find member '{0}' on {1}.".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType)), null);
                             }
+#endif
 
-                            if (Serializer._missingMemberHandling == MissingMemberHandling.Error)
+							if (Serializer._missingMemberHandling == MissingMemberHandling.Error)
                             {
                                 throw JsonSerializationException.Create(reader, "Could not find member '{0}' on object of type '{1}'".FormatWith(CultureInfo.InvariantCulture, memberName, objectType.Name));
                             }
@@ -2292,12 +2312,14 @@ namespace Newtonsoft.Json.Serialization
 
                             if (property == null)
                             {
-                                if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+								if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                                 {
                                     TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Could not find member '{0}' on {1}".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType)), null);
                                 }
+#endif
 
-                                if (Serializer._missingMemberHandling == MissingMemberHandling.Error)
+								if (Serializer._missingMemberHandling == MissingMemberHandling.Error)
                                 {
                                     throw JsonSerializationException.Create(reader, "Could not find member '{0}' on object of type '{1}'".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType.Name));
                                 }
@@ -2397,12 +2419,14 @@ namespace Newtonsoft.Json.Serialization
 
             bool shouldDeserialize = property.ShouldDeserialize(target);
 
-            if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+#if HAVE_TRACE_WRITER
+			if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, reader.Path, "ShouldDeserialize result for property '{0}' on {1}: {2}".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType, shouldDeserialize)), null);
             }
+#endif
 
-            return shouldDeserialize;
+			return shouldDeserialize;
         }
 
         private bool CheckPropertyName(JsonReader reader, string memberName)

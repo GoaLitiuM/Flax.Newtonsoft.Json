@@ -1,4 +1,5 @@
-﻿using System;
+#if HAVE_TRACE_WRITER
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -98,3 +99,4 @@ namespace Newtonsoft.Json.Serialization
         }
     }
 }
+#endif

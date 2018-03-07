@@ -232,17 +232,19 @@ namespace Newtonsoft.Json
         /// <value>A function that creates the <see cref="IReferenceResolver"/> used by the serializer when resolving references.</value>
         public Func<IReferenceResolver> ReferenceResolverProvider { get; set; }
 
-        /// <summary>
-        /// Gets or sets the <see cref="ITraceWriter"/> used by the serializer when writing trace messages.
-        /// </summary>
-        /// <value>The trace writer.</value>
-        public ITraceWriter TraceWriter { get; set; }
-        
-        /// <summary>
-        /// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
-        /// </summary>
-        /// <value>The binder.</value>
-        public ISerializationBinder SerializationBinder { get; set; }
+#if HAVE_TRACE_WRITER
+		/// <summary>
+		/// Gets or sets the <see cref="ITraceWriter"/> used by the serializer when writing trace messages.
+		/// </summary>
+		/// <value>The trace writer.</value>
+		public ITraceWriter TraceWriter { get; set; }
+#endif
+
+		/// <summary>
+		/// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
+		/// </summary>
+		/// <value>The binder.</value>
+		public ISerializationBinder SerializationBinder { get; set; }
 
         /// <summary>
         /// Gets or sets the error handler called during serialization and deserialization.
