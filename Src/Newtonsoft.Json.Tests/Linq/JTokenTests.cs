@@ -25,7 +25,7 @@
 
 using System;
 using System.Collections.Generic;
-#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_3 || NETSTANDARD2_0
 using System.Numerics;
 #endif
 using System.Text;
@@ -34,6 +34,7 @@ using Newtonsoft.Json.Converters;
 using Xunit;
 using Test = Xunit.FactAttribute;
 using Assert = Newtonsoft.Json.Tests.XUnitAssert;
+using TestCase = Xunit.InlineDataAttribute;
 #else
 using NUnit.Framework;
 #endif
@@ -369,7 +370,7 @@ namespace Newtonsoft.Json.Tests.Linq
 
             Assert.AreEqual(5, (int)(new JValue(StringComparison.OrdinalIgnoreCase)));
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3 || NETSTANDARD2_0
             string bigIntegerText = "1234567899999999999999999999999999999999999999999999999999999999999990";
 
             Assert.AreEqual(BigInteger.Parse(bigIntegerText), (new JValue(BigInteger.Parse(bigIntegerText))).Value);
@@ -449,7 +450,7 @@ namespace Newtonsoft.Json.Tests.Linq
 #endif
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (Uri)new JValue(true); }, "Can not convert Boolean to Uri.");
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3 || NETSTANDARD2_0
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (new JValue(new Uri("http://www.google.com"))).ToObject<BigInteger>(); }, "Can not convert Uri to BigInteger.");
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (JValue.CreateNull()).ToObject<BigInteger>(); }, "Can not convert Null to BigInteger.");
             ExceptionAssert.Throws<ArgumentException>(() => { var i = (new JValue(Guid.NewGuid())).ToObject<BigInteger>(); }, "Can not convert Guid to BigInteger.");
@@ -466,7 +467,7 @@ namespace Newtonsoft.Json.Tests.Linq
         [Test]
         public void ToObject()
         {
-#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE) || NETSTANDARD1_3 || NETSTANDARD2_0
             Assert.AreEqual((BigInteger)1, (new JValue(1).ToObject(typeof(BigInteger))));
             Assert.AreEqual((BigInteger)1, (new JValue(1).ToObject(typeof(BigInteger?))));
             Assert.AreEqual((BigInteger?)null, (JValue.CreateNull().ToObject(typeof(BigInteger?))));
@@ -524,7 +525,7 @@ namespace Newtonsoft.Json.Tests.Linq
             Assert.IsTrue(JToken.DeepEquals(new JValue((DateTimeOffset?)null), (JValue)(DateTimeOffset?)null));
 #endif
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3 || NETSTANDARD2_0
             // had to remove implicit casting to avoid user reference to System.Numerics.dll
             Assert.IsTrue(JToken.DeepEquals(new JValue(new BigInteger(1)), new JValue(new BigInteger(1))));
             Assert.IsTrue(JToken.DeepEquals(new JValue((BigInteger?)null), new JValue((BigInteger?)null)));
@@ -1147,7 +1148,7 @@ namespace Newtonsoft.Json.Tests.Linq
             Assert.IsTrue(a.DeepEquals(a2));
         }
 
-#if !(PORTABLE || DNXCORE50 || PORTABLE40)
+#if !(PORTABLE || DNXCORE50 || PORTABLE40) || NETSTANDARD2_0
         [Test]
         public void Clone()
         {
@@ -1289,6 +1290,38 @@ namespace Newtonsoft.Json.Tests.Linq
 
             ExceptionAssert.Throws<JsonReaderException>(() => JToken.Parse(json),
                 "Additional text encountered after finished reading JSON content: {. Path '', line 3, position 0.");
+        }
+
+#if DNXCORE50
+        [Theory]
+#endif
+        [TestCase("test customer", "['test customer']")]
+        [TestCase("test customer's", "['test customer\\'s']")]
+        [TestCase("testcustomer's", "['testcustomer\\'s']")]
+        [TestCase("testcustomer", "testcustomer")]
+        [TestCase("test.customer", "['test.customer']")]
+        [TestCase("test\rcustomer", "['test\\rcustomer']")]
+        [TestCase("test\ncustomer", "['test\\ncustomer']")]
+        [TestCase("test\tcustomer", "['test\\tcustomer']")]
+        [TestCase("test\bcustomer", "['test\\bcustomer']")]
+        [TestCase("test\fcustomer", "['test\\fcustomer']")]
+        [TestCase("test/customer", "['test/customer']")]
+        [TestCase("test\\customer", "['test\\\\customer']")]
+        [TestCase("\"test\"customer", "['\"test\"customer']")]
+        public void PathEscapingTest(string name, string expectedPath)
+        {
+            JValue v = new JValue("12345");
+            JObject o = new JObject
+            {
+                [name] = v
+            };
+
+            string path = v.Path;
+
+            Assert.AreEqual(expectedPath, path);
+
+            JToken token = o.SelectToken(path);
+            Assert.AreEqual(v, token);
         }
     }
 }

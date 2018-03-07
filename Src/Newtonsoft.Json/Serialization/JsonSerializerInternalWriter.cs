@@ -277,10 +277,9 @@ namespace Newtonsoft.Json.Serialization
             return Serializer.GetReferenceResolver().IsReferenced(this, value);
         }
 
-        private bool ShouldWriteProperty(object memberValue, JsonProperty property)
+        private bool ShouldWriteProperty(object memberValue, JsonObjectContract containerContract, JsonProperty property)
         {
-            if (property.NullValueHandling.GetValueOrDefault(Serializer._nullValueHandling) == NullValueHandling.Ignore &&
-                memberValue == null)
+            if (memberValue == null && ResolvedNullValueHandling(containerContract, property) == NullValueHandling.Ignore)
             {
                 return false;
             }
@@ -387,8 +386,7 @@ namespace Newtonsoft.Json.Serialization
         internal static bool TryConvertToString(object value, Type type, out string s)
         {
 #if HAVE_TYPE_DESCRIPTOR
-            TypeConverter converter;
-            if (JsonTypeReflector.CanTypeDescriptorConvertString(type, out converter))
+            if (JsonTypeReflector.CanTypeDescriptorConvertString(type, out TypeConverter converter))
             {
                 s = converter.ConvertToInvariantString(value);
                 return true;
@@ -418,8 +416,7 @@ namespace Newtonsoft.Json.Serialization
         {
             OnSerializing(writer, contract, value);
 
-            string s;
-            TryConvertToString(value, contract.UnderlyingType, out s);
+            TryConvertToString(value, contract.UnderlyingType, out string s);
             writer.WriteValue(s);
 
             OnSerialized(writer, contract, value);
@@ -464,10 +461,7 @@ namespace Newtonsoft.Json.Serialization
                 JsonProperty property = contract.Properties[index];
                 try
                 {
-                    object memberValue;
-                    JsonContract memberContract;
-
-                    if (!CalculatePropertyValues(writer, value, contract, member, property, out memberContract, out memberValue))
+                    if (!CalculatePropertyValues(writer, value, contract, member, property, out JsonContract memberContract, out object memberValue))
                     {
                         continue;
                     }
@@ -541,7 +535,7 @@ namespace Newtonsoft.Json.Serialization
                 memberValue = property.ValueProvider.GetValue(value);
                 memberContract = (property.PropertyContract.IsSealed) ? property.PropertyContract : GetContractSafe(memberValue);
 
-                if (ShouldWriteProperty(memberValue, property))
+                if (ShouldWriteProperty(memberValue, contract as JsonObjectContract, property))
                 {
                     if (ShouldWriteReference(memberValue, property, memberContract, contract, member))
                     {
@@ -596,8 +590,7 @@ namespace Newtonsoft.Json.Serialization
 
         private bool HasCreatorParameter(JsonContainerContract contract, JsonProperty property)
         {
-            JsonObjectContract objectContract = contract as JsonObjectContract;
-            if (objectContract == null)
+            if (!(contract is JsonObjectContract objectContract))
             {
                 return false;
             }
@@ -679,8 +672,7 @@ namespace Newtonsoft.Json.Serialization
 
         private void SerializeList(JsonWriter writer, IEnumerable values, JsonArrayContract contract, JsonProperty member, JsonContainerContract collectionContract, JsonProperty containerProperty)
         {
-            IWrappedCollection wrappedCollection = values as IWrappedCollection;
-            object underlyingList = wrappedCollection != null ? wrappedCollection.UnderlyingCollection : values;
+            object underlyingList = values is IWrappedCollection wrappedCollection ? wrappedCollection.UnderlyingCollection : values;
 
             OnSerializing(writer, contract, underlyingList);
 
@@ -915,10 +907,7 @@ namespace Newtonsoft.Json.Serialization
                 {
                     try
                     {
-                        object memberValue;
-                        JsonContract memberContract;
-
-                        if (!CalculatePropertyValues(writer, value, contract, member, property, out memberContract, out memberValue))
+                        if (!CalculatePropertyValues(writer, value, contract, member, property, out JsonContract memberContract, out object memberValue))
                         {
                             continue;
                         }
@@ -942,8 +931,7 @@ namespace Newtonsoft.Json.Serialization
 
             foreach (string memberName in value.GetDynamicMemberNames())
             {
-                object memberValue;
-                if (contract.TryGetMember(value, memberName, out memberValue))
+                if (contract.TryGetMember(value, memberName, out object memberValue))
                 {
                     try
                     {
@@ -1047,8 +1035,7 @@ namespace Newtonsoft.Json.Serialization
 
         private void SerializeDictionary(JsonWriter writer, IDictionary values, JsonDictionaryContract contract, JsonProperty member, JsonContainerContract collectionContract, JsonProperty containerProperty)
         {
-            IWrappedDictionary wrappedDictionary = values as IWrappedDictionary;
-            object underlyingDictionary = wrappedDictionary != null ? wrappedDictionary.UnderlyingDictionary : values;
+            object underlyingDictionary = values is IWrappedDictionary wrappedDictionary ? wrappedDictionary.UnderlyingDictionary : values;
 
             OnSerializing(writer, contract, underlyingDictionary);
             _serializeStack.Add(underlyingDictionary);
@@ -1075,8 +1062,7 @@ namespace Newtonsoft.Json.Serialization
                 {
                     DictionaryEntry entry = e.Entry;
 
-                    bool escape;
-                    string propertyName = GetPropertyName(writer, entry.Key, contract.KeyContract, out escape);
+                    string propertyName = GetPropertyName(writer, entry.Key, contract.KeyContract, out bool escape);
 
                     propertyName = (contract.DictionaryKeyResolver != null)
                         ? contract.DictionaryKeyResolver(propertyName)
@@ -1131,8 +1117,6 @@ namespace Newtonsoft.Json.Serialization
 
         private string GetPropertyName(JsonWriter writer, object name, JsonContract contract, out bool escape)
         {
-            string propertyName;
-
             if (contract.ContractType == JsonContractType.Primitive)
             {
                 JsonPrimitiveContract primitiveContract = (JsonPrimitiveContract)contract;
@@ -1177,11 +1161,17 @@ namespace Newtonsoft.Json.Serialization
                     default:
                     {
                         escape = true;
+
+                        if (primitiveContract.IsEnum && EnumUtils.TryToString(primitiveContract.NonNullableUnderlyingType, name, false, out string enumName))
+                        {
+                            return enumName;
+                        }
+
                         return Convert.ToString(name, CultureInfo.InvariantCulture);
                     }
                 }
             }
-            else if (TryConvertToString(name, name.GetType(), out propertyName))
+            else if (TryConvertToString(name, name.GetType(), out string propertyName))
             {
                 escape = true;
                 return propertyName;

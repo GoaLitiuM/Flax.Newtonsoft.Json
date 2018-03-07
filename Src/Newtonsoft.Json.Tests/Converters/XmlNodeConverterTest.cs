@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if !(DNXCORE50 || PORTABLE40)
+#if !(DNXCORE50 || PORTABLE40) || NETSTANDARD1_3 || NETSTANDARD2_0
 using System.Globalization;
 #if NET20
 using Newtonsoft.Json.Utilities.LinqBridge;
@@ -58,7 +58,7 @@ namespace Newtonsoft.Json.Tests.Converters
     [TestFixture]
     public class XmlNodeConverterTest : TestFixtureBase
     {
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         private string SerializeXmlNode(XmlNode node)
         {
             string json = JsonConvert.SerializeXmlNode(node, Formatting.Indented);
@@ -150,6 +150,26 @@ namespace Newtonsoft.Json.Tests.Converters
 
             return sw.ToString();
         }
+
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
+        [Test]
+        public void DeserializeXmlNode_DefaultDate()
+        {
+            XmlDocument xmlNode = JsonConvert.DeserializeXmlNode("{Time: \"0001-01-01T00:00:00\"}");
+
+            Assert.AreEqual("<Time>0001-01-01T00:00:00</Time>", xmlNode.OuterXml);
+        }
+#endif
+
+#if !NET20
+        [Test]
+        public void DeserializeXNode_DefaultDate()
+        {
+            var xmlNode = JsonConvert.DeserializeXNode("{Time: \"0001-01-01T00:00:00\"}");
+
+            Assert.AreEqual("<Time>0001-01-01T00:00:00</Time>", xmlNode.ToString());
+        }
+#endif
 
         [Test]
         public void WriteJsonNull()
@@ -262,7 +282,7 @@ namespace Newtonsoft.Json.Tests.Converters
         }
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void MultipleNamespacesXmlDocument()
         {
@@ -441,7 +461,7 @@ namespace Newtonsoft.Json.Tests.Converters
 </root>", doc.ToString());
         }
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void SerializeEmptyDocument()
         {
@@ -487,7 +507,7 @@ namespace Newtonsoft.Json.Tests.Converters
             Assert.IsTrue(equals);
         }
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void DeserializeUndeclaredNamespacePrefix()
         {
@@ -502,7 +522,7 @@ namespace Newtonsoft.Json.Tests.Converters
 #endif
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void DeserializeMultipleRootElements()
         {
@@ -1297,7 +1317,7 @@ namespace Newtonsoft.Json.Tests.Converters
   ]
 }";
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
             XmlDocument newDoc = JsonConvert.DeserializeXmlNode(json, "myRoot");
 
             string xml = IndentXml(newDoc.InnerXml);
@@ -1335,7 +1355,7 @@ namespace Newtonsoft.Json.Tests.Converters
 </myRoot>", IndentXml(newXDoc.ToString(SaveOptions.DisableFormatting)));
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
             string newJson = JsonConvert.SerializeXmlNode(newDoc, Formatting.Indented);
             Console.WriteLine(newJson);
 #endif
@@ -1360,7 +1380,7 @@ namespace Newtonsoft.Json.Tests.Converters
   ]
 }";
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
             XmlDocument newDoc = JsonConvert.DeserializeXmlNode(json, "myRoot", true);
 
             StringAssert.AreEqual(@"<myRoot>
@@ -1396,7 +1416,7 @@ namespace Newtonsoft.Json.Tests.Converters
 </myRoot>", IndentXml(newXDoc.ToString(SaveOptions.DisableFormatting)));
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
             string newJson = JsonConvert.SerializeXmlNode(newDoc, Formatting.Indented, true);
             StringAssert.AreEqual(json, newJson);
 #endif
@@ -1422,7 +1442,7 @@ namespace Newtonsoft.Json.Tests.Converters
   ]
 }";
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
             XmlDocument newDoc = JsonConvert.DeserializeXmlNode(json, "myRoot");
 
             Assert.AreEqual(@"<myRoot><available_sizes><available_sizes><available_sizes>113</available_sizes><available_sizes>150</available_sizes></available_sizes><available_sizes>assets/images/resized/0001/1070/11070v1-max-150x150.jpg</available_sizes></available_sizes><available_sizes><available_sizes><available_sizes>189</available_sizes><available_sizes>250</available_sizes></available_sizes><available_sizes>assets/images/resized/0001/1070/11070v1-max-250x250.jpg</available_sizes></available_sizes><available_sizes><available_sizes><available_sizes>341</available_sizes><available_sizes>450</available_sizes></available_sizes><available_sizes>assets/images/resized/0001/1070/11070v1-max-450x450.jpg</available_sizes></available_sizes></myRoot>", newDoc.InnerXml);
@@ -1435,7 +1455,7 @@ namespace Newtonsoft.Json.Tests.Converters
 #endif
         }
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void Encoding()
         {
@@ -1450,7 +1470,7 @@ namespace Newtonsoft.Json.Tests.Converters
         }
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void SerializeComment()
         {
@@ -2139,6 +2159,7 @@ namespace Newtonsoft.Json.Tests.Converters
             Assert.AreEqual(@"﻿<?xml version=""1.0"" encoding=""utf-8""?><root booleanType=""true"" />", xmlString);
         }
 
+#if !(NETSTANDARD1_0 || NETSTANDARD1_3)
         [Test]
         public void IgnoreCultureForTypedAttributes()
         {
@@ -2174,6 +2195,7 @@ namespace Newtonsoft.Json.Tests.Converters
                 System.Threading.Thread.CurrentThread.CurrentCulture = originalCulture;
             }
         }
+#endif
 
         [Test]
         public void NullAttributeValue()
@@ -2499,7 +2521,7 @@ namespace Newtonsoft.Json.Tests.Converters
         }
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void DeserializeXmlNodeDefaultNamespace()
         {
@@ -2827,7 +2849,7 @@ namespace Newtonsoft.Json.Tests.Converters
         }
 #endif
 
-#if !PORTABLE || NETSTANDARD1_3
+#if !PORTABLE || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void SerializeAndDeserializeXmlElementWithNamespaceInChildrenRootDontHaveNameSpace()
         {
@@ -2846,7 +2868,7 @@ namespace Newtonsoft.Json.Tests.Converters
             Assert.AreEqual(@"<root><b xmlns=""http://www.example.com/ns"">Asd</b><c>AAA</c><test>adad</test></root>", xmlBack.OuterXml);
         }
 
-#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE || PORTABLE40) || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void DeserializeBigInteger()
         {

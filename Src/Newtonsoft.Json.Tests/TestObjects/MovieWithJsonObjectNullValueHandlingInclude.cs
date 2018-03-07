@@ -23,27 +23,19 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-namespace Newtonsoft.Json.Utilities
+using System;
+using System.Collections.Generic;
+
+namespace Newtonsoft.Json.Tests.TestObjects
 {
-    internal class EnumValue<T> where T : struct
+    [JsonObject(ItemNullValueHandling = NullValueHandling.Include)]
+    public class MovieWithJsonObjectNullValueHandlingInclude
     {
-        private readonly string _name;
-        private readonly T _value;
-
-        public string Name
-        {
-            get { return _name; }
-        }
-
-        public T Value
-        {
-            get { return _value; }
-        }
-
-        public EnumValue(string name, T value)
-        {
-            _name = name;
-            _value = value;
-        }
+        public string Name { get; set; }
+        public string Description { get; set; }
+        public string Classification { get; set; }
+        public string Studio { get; set; }
+        public DateTime? ReleaseDate { get; set; }
+        public List<string> ReleaseCountries { get; set; }
     }
 }

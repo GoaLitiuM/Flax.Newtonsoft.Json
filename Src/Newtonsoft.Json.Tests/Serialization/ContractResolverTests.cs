@@ -115,7 +115,7 @@ namespace Newtonsoft.Json.Tests.Serialization
     [TestFixture]
     public class ContractResolverTests : TestFixtureBase
     {
-#if !(PORTABLE || PORTABLE40) || NETSTANDARD1_3
+#if !(PORTABLE || PORTABLE40) || NETSTANDARD1_3 || NETSTANDARD2_0
         [Test]
         public void ResolveSerializableContract()
         {
@@ -123,6 +123,15 @@ namespace Newtonsoft.Json.Tests.Serialization
             JsonContract contract = contractResolver.ResolveContract(typeof(ISerializableTestObject));
 
             Assert.AreEqual(JsonContractType.Serializable, contract.ContractType);
+        }
+
+        [Test]
+        public void ResolveSerializableWithoutAttributeContract()
+        {
+            DefaultContractResolver contractResolver = new DefaultContractResolver();
+            JsonContract contract = contractResolver.ResolveContract(typeof(ISerializableWithoutAttributeTestObject));
+
+            Assert.AreEqual(JsonContractType.Object, contract.ContractType);
         }
 
         [Test]
@@ -525,11 +534,11 @@ namespace Newtonsoft.Json.Tests.Serialization
             string iPersonJson = JsonConvert.SerializeObject(employee, Formatting.Indented,
                 new JsonSerializerSettings { ContractResolver = new IPersonContractResolver() });
 
-            StringAssert.AreEqual(@"{
-  ""FirstName"": ""Maurice"",
-  ""LastName"": ""Moss"",
-  ""BirthDate"": ""1977-12-30T01:01:01Z""
-}", iPersonJson);
+            JObject o = JObject.Parse(iPersonJson);
+
+            Assert.AreEqual("Maurice", (string)o["FirstName"]);
+            Assert.AreEqual("Moss", (string)o["LastName"]);
+            Assert.AreEqual(new DateTime(1977, 12, 30, 1, 1, 1, DateTimeKind.Utc), (DateTime)o["BirthDate"]);
         }
 
         [Test]
@@ -573,7 +582,7 @@ namespace Newtonsoft.Json.Tests.Serialization
 }", startingWithB);
         }
 
-#if !(PORTABLE || PORTABLE40)
+#if !(PORTABLE || PORTABLE40) || NETSTANDARD2_0
 #pragma warning disable 618
         [Test]
         public void SerializeCompilerGeneratedMembers()

@@ -44,6 +44,7 @@ using NUnit.Framework;
 #endif
 using Newtonsoft.Json;
 using System.IO;
+using System.Reflection;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Tests.TestObjects;
@@ -135,7 +136,7 @@ namespace Newtonsoft.Json.Tests
             Assert.AreEqual(1, arrayPool.FreeArrays.Count);
         }
 
-#if !(NET20 || NET35 || NET40 || PORTABLE || PORTABLE40 || DNXCORE50)
+#if !(NET20 || NET35 || NET40 || PORTABLE || PORTABLE40 || DNXCORE50) || NETSTANDARD2_0
         [Test]
         public void BufferErroringWithInvalidSize()
         {
@@ -224,7 +225,7 @@ namespace Newtonsoft.Json.Tests
             Assert.IsTrue(ms.CanRead);
         }
 
-#if !(PORTABLE)
+#if !(PORTABLE) || NETSTANDARD2_0
         [Test]
         public void WriteIConvertable()
         {
@@ -315,7 +316,7 @@ namespace Newtonsoft.Json.Tests
 #if !NET20
             expected = @"[null,""c"",null,true,null,1,null,1,null,1,null,1,null,1,null,1,null,1,null,1,null,1.1,null,1.1,null,1.1,null,""1970-01-01T00:00:00Z"",null,""1970-01-01T00:00:00+00:00""]";
 #else
-      expected = @"[null,""c"",null,true,null,1,null,1,null,1,null,1,null,1,null,1,null,1,null,1,null,1.1,null,1.1,null,1.1,null,""1970-01-01T00:00:00Z""]";
+            expected = @"[null,""c"",null,true,null,1,null,1,null,1,null,1,null,1,null,1,null,1,null,1,null,1.1,null,1.1,null,1.1,null,""1970-01-01T00:00:00Z""]";
 #endif
 
             Assert.AreEqual(expected, json);
@@ -397,7 +398,7 @@ namespace Newtonsoft.Json.Tests
                 jsonWriter.WriteValue("DVD read/writer");
                 jsonWriter.WriteComment("(broken)");
                 jsonWriter.WriteValue("500 gigabyte hard drive");
-                jsonWriter.WriteValue("200 gigabype hard drive");
+                jsonWriter.WriteValue("200 gigabyte hard drive");
                 jsonWriter.WriteEndObject();
                 Assert.AreEqual(WriteState.Start, jsonWriter.WriteState);
             }
@@ -409,7 +410,7 @@ namespace Newtonsoft.Json.Tests
     ""DVD read/writer""
     /*(broken)*/,
     ""500 gigabyte hard drive"",
-    ""200 gigabype hard drive""
+    ""200 gigabyte hard drive""
   ]
 }";
             string result = sb.ToString();
@@ -437,7 +438,7 @@ namespace Newtonsoft.Json.Tests
                 jsonWriter.WriteValue("DVD read/writer");
                 jsonWriter.WriteComment("(broken)");
                 jsonWriter.WriteValue("500 gigabyte hard drive");
-                jsonWriter.WriteValue("200 gigabype hard drive");
+                jsonWriter.WriteValue("200 gigabyte hard drive");
                 jsonWriter.Close();
             }
 
@@ -448,7 +449,7 @@ namespace Newtonsoft.Json.Tests
     ""DVD read/writer""
     /*(broken)*/,
     ""500 gigabyte hard drive"",
-    ""200 gigabype hard drive""
+    ""200 gigabyte hard drive""
   ]
 }";
             string result = sb.ToString();
@@ -476,7 +477,7 @@ namespace Newtonsoft.Json.Tests
                 jsonWriter.WriteValue("DVD read/writer");
                 jsonWriter.WriteComment("(broken)");
                 jsonWriter.WriteValue("500 gigabyte hard drive");
-                jsonWriter.WriteValue("200 gigabype hard drive");
+                jsonWriter.WriteValue("200 gigabyte hard drive");
                 jsonWriter.WriteEnd();
                 jsonWriter.WriteEndObject();
                 Assert.AreEqual(WriteState.Start, jsonWriter.WriteState);
@@ -489,7 +490,7 @@ namespace Newtonsoft.Json.Tests
             //     "DVD read/writer"
             //     /*(broken)*/,
             //     "500 gigabyte hard drive",
-            //     "200 gigabype hard drive"
+            //     "200 gigabyte hard drive"
             //   ]
             // }
 
@@ -500,7 +501,7 @@ namespace Newtonsoft.Json.Tests
     ""DVD read/writer""
     /*(broken)*/,
     ""500 gigabyte hard drive"",
-    ""200 gigabype hard drive""
+    ""200 gigabyte hard drive""
   ]
 }";
             string result = sb.ToString();
@@ -902,6 +903,9 @@ namespace Newtonsoft.Json.Tests
                 jsonWriter.WriteValue(long.MinValue);
                 jsonWriter.WriteValue(ulong.MaxValue);
                 jsonWriter.WriteValue(ulong.MinValue);
+                jsonWriter.WriteValue((ulong)uint.MaxValue - 1);
+                jsonWriter.WriteValue((ulong)uint.MaxValue);
+                jsonWriter.WriteValue((ulong)uint.MaxValue + 1);
 
                 jsonWriter.WriteEndArray();
             }
@@ -918,7 +922,10 @@ namespace Newtonsoft.Json.Tests
   9223372036854775807,
   -9223372036854775808,
   18446744073709551615,
-  0
+  0,
+  4294967294,
+  4294967295,
+  4294967296
 ]", sb.ToString());
         }
 
@@ -1207,7 +1214,7 @@ _____'propertyName': NaN,
 
             var valueStates = JsonWriter.StateArrayTempate[7];
 
-            foreach (JsonToken valueToken in EnumUtils.GetValues(typeof(JsonToken)))
+            foreach (JsonToken valueToken in GetValues(typeof(JsonToken)))
             {
                 switch (valueToken)
                 {
@@ -1223,6 +1230,24 @@ _____'propertyName': NaN,
                         break;
                 }
             }
+        }
+
+        private static IList<object> GetValues(Type enumType)
+        {
+            if (!enumType.IsEnum())
+            {
+                throw new ArgumentException("Type {0} is not an enum.".FormatWith(CultureInfo.InvariantCulture, enumType.Name), nameof(enumType));
+            }
+
+            List<object> values = new List<object>();
+
+            foreach (FieldInfo field in enumType.GetFields(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static))
+            {
+                object value = field.GetValue(enumType);
+                values.Add(value);
+            }
+
+            return values;
         }
 
         [Test]

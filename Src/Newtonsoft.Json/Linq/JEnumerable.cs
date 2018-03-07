@@ -39,7 +39,7 @@ namespace Newtonsoft.Json.Linq
     /// Represents a collection of <see cref="JToken"/> objects.
     /// </summary>
     /// <typeparam name="T">The type of token.</typeparam>
-    public struct JEnumerable<T> : IJEnumerable<T>, IEquatable<JEnumerable<T>> where T : JToken
+    public readonly struct JEnumerable<T> : IJEnumerable<T>, IEquatable<JEnumerable<T>> where T : JToken
     {
         /// <summary>
         /// An empty collection of <see cref="JToken"/> objects.
@@ -113,9 +113,9 @@ namespace Newtonsoft.Json.Linq
         /// </returns>
         public override bool Equals(object obj)
         {
-            if (obj is JEnumerable<T>)
+            if (obj is JEnumerable<T> enumerable)
             {
-                return Equals((JEnumerable<T>)obj);
+                return Equals(enumerable);
             }
 
             return false;

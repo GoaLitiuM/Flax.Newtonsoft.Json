@@ -52,7 +52,7 @@ namespace Newtonsoft.Json.Tests.Linq
     [TestFixture]
     public class LinqToJsonTest : TestFixtureBase
     {
-#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_3
+#if !(NET20 || NET35 || PORTABLE40 || PORTABLE) || NETSTANDARD1_3 || NETSTANDARD2_0
         public class DemoClass
         {
             public decimal maxValue;
@@ -1451,10 +1451,8 @@ keyword such as type of business.""
         {
             JObject o = JObject.Parse("{'FooBarNoEnum':'SOME_OTHER_VALUE'}");
 
-            ExceptionAssert.Throws<ArgumentException>(() =>
-            {
-                o["FooBarNoEnum"].ToObject<FooBarNoEnum>();
-            }, "Could not convert 'SOME_OTHER_VALUE' to FooBarNoEnum.");
+            FooBarNoEnum e = o["FooBarNoEnum"].ToObject<FooBarNoEnum>();
+            Assert.AreEqual(FooBarNoEnum.SomeOtherValue, e);
         }
 #endif
 

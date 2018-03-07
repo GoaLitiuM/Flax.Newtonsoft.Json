@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Text.RegularExpressions;
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
@@ -22,7 +23,8 @@ namespace Newtonsoft.Json.Linq.JsonPath
         GreaterThan = 6,
         GreaterThanOrEquals = 7,
         And = 8,
-        Or = 9
+        Or = 9,
+        RegexEquals = 10
     }
 
     internal abstract class QueryExpression
@@ -76,14 +78,12 @@ namespace Newtonsoft.Json.Linq.JsonPath
 
         private IEnumerable<JToken> GetResult(JToken root, JToken t, object o)
         {
-            JToken resultToken = o as JToken;
-            if (resultToken != null)
+            if (o is JToken resultToken)
             {
                 return new[] { resultToken };
             }
 
-            List<PathFilter> pathFilters = o as List<PathFilter>;
-            if (pathFilters != null)
+            if (o is List<PathFilter> pathFilters)
             {
                 return JPath.Evaluate(pathFilters, root, t, false);
             }
@@ -124,13 +124,16 @@ namespace Newtonsoft.Json.Linq.JsonPath
 
         private bool MatchTokens(JToken leftResult, JToken rightResult)
         {
-            JValue leftValue = leftResult as JValue;
-            JValue rightValue = rightResult as JValue;
-
-            if (leftValue != null && rightValue != null)
+            if (leftResult is JValue leftValue && rightResult is JValue rightValue)
             {
                 switch (Operator)
                 {
+                    case QueryOperator.RegexEquals:
+                        if (RegexEquals(leftValue, rightValue))
+                        {
+                            return true;
+                        }
+                        break;
                     case QueryOperator.Equals:
                         if (EqualsWithStringCoercion(leftValue, rightValue))
                         {
@@ -186,6 +189,22 @@ namespace Newtonsoft.Json.Linq.JsonPath
             return false;
         }
 
+        private static bool RegexEquals(JValue input, JValue pattern)
+        {
+            if (input.Type != JTokenType.String || pattern.Type != JTokenType.String)
+            {
+                return false;
+            }
+
+            string regexText = (string)pattern.Value;
+            int patternOptionDelimiterIndex = regexText.LastIndexOf('/');
+
+            string patternText = regexText.Substring(1, patternOptionDelimiterIndex - 1);
+            string optionsText = regexText.Substring(patternOptionDelimiterIndex + 1);
+
+            return Regex.IsMatch((string)input.Value, patternText, MiscellaneousUtils.GetRegexOptions(optionsText));
+        }
+
         private bool EqualsWithStringCoercion(JValue value, JValue queryValue)
         {
             if (value.Equals(queryValue))
@@ -209,9 +228,9 @@ namespace Newtonsoft.Json.Linq.JsonPath
                     using (StringWriter writer = StringUtils.CreateStringWriter(64))
                     {
 #if HAVE_DATE_TIME_OFFSET
-                        if (value.Value is DateTimeOffset)
+                        if (value.Value is DateTimeOffset offset)
                         {
-                            DateTimeUtils.WriteDateTimeOffsetString(writer, (DateTimeOffset)value.Value, DateFormatHandling.IsoDateFormat, null, CultureInfo.InvariantCulture);
+                            DateTimeUtils.WriteDateTimeOffsetString(writer, offset, DateFormatHandling.IsoDateFormat, null, CultureInfo.InvariantCulture);
                         }
                         else
 #endif

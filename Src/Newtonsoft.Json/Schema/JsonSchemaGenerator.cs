@@ -72,7 +72,7 @@ namespace Newtonsoft.Json.Schema
 
                 return _contractResolver;
             }
-            set { _contractResolver = value; }
+            set => _contractResolver = value;
         }
 
         private class TypeSchema
@@ -94,10 +94,7 @@ namespace Newtonsoft.Json.Schema
         private readonly IList<TypeSchema> _stack = new List<TypeSchema>();
         private JsonSchema _currentSchema;
 
-        private JsonSchema CurrentSchema
-        {
-            get { return _currentSchema; }
-        }
+        private JsonSchema CurrentSchema => _currentSchema;
 
         private void Push(TypeSchema typeSchema)
         {
@@ -312,10 +309,11 @@ namespace Newtonsoft.Json.Schema
                         {
                             CurrentSchema.Enum = new List<JToken>();
 
-                            IList<EnumValue<long>> enumValues = EnumUtils.GetNamesAndValues<long>(type);
-                            foreach (EnumValue<long> enumValue in enumValues)
+                            EnumInfo enumValues = EnumUtils.GetEnumValuesAndNames(type);
+                            for (int i = 0; i < enumValues.Names.Length; i++)
                             {
-                                JToken value = JToken.FromObject(enumValue.Value);
+                                ulong v = enumValues.Values[i];
+                                JToken value = JToken.FromObject(Enum.ToObject(type, v));
 
                                 CurrentSchema.Enum.Add(value);
                             }

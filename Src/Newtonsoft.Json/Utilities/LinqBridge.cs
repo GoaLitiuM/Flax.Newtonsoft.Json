@@ -2832,12 +2832,9 @@ namespace Newtonsoft.Json.Utilities.LinqBridge
     /// Gets the number of key/value collection pairs in the <see cref="Lookup{TKey,TElement}" />.
     /// </summary>
 
-    public int Count
-    {
-      get { return _map.Count; }
-    }
+    public int Count => _map.Count;
 
-    /// <summary>
+      /// <summary>
     /// Gets the collection of values indexed by the specified key.
     /// </summary>
 
@@ -2994,10 +2991,10 @@ namespace Newtonsoft.Json.Utilities.LinqBridge
   }
 
   [Serializable]
-  internal struct Tuple<TFirst, TSecond> : IEquatable<Tuple<TFirst, TSecond>>
+  internal readonly struct Tuple<TFirst, TSecond> : IEquatable<Tuple<TFirst, TSecond>>
   {
-    public TFirst First { get; private set; }
-    public TSecond Second { get; private set; }
+    public TFirst First { get; }
+    public TSecond Second { get; }
 
     public Tuple(TFirst first, TSecond second)
       : this()

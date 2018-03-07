@@ -407,7 +407,7 @@ namespace Newtonsoft.Json
         {
             await task.ConfigureAwait(false);
 
-            await _writer.WriteAsync('[').ConfigureAwait(false);
+            await _writer.WriteAsync('[', cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -437,7 +437,7 @@ namespace Newtonsoft.Json
         {
             await task.ConfigureAwait(false);
 
-            await _writer.WriteAsync('{').ConfigureAwait(false);
+            await _writer.WriteAsync('{', cancellationToken).ConfigureAwait(false);
         }
 
         /// <summary>
@@ -962,9 +962,9 @@ namespace Newtonsoft.Json
                     return WriteNullAsync(cancellationToken);
                 }
 #if HAVE_BIG_INTEGER
-                if (value is BigInteger)
+                if (value is BigInteger i)
                 {
-                    return WriteValueAsync((BigInteger)value, cancellationToken);
+                    return WriteValueAsync(i, cancellationToken);
                 }
 #endif
 
@@ -1354,6 +1354,4 @@ namespace Newtonsoft.Json
         }
     }
 }
-
 #endif
-

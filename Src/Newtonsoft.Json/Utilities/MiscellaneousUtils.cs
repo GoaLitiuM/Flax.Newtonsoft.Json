@@ -30,6 +30,7 @@ using System.ComponentModel;
 using System.Reflection;
 using System.Text;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Newtonsoft.Json.Utilities
 {
@@ -108,18 +109,14 @@ namespace Newtonsoft.Json.Utilities
 
         public static string GetPrefix(string qualifiedName)
         {
-            string prefix;
-            string localName;
-            GetQualifiedNameParts(qualifiedName, out prefix, out localName);
+            GetQualifiedNameParts(qualifiedName, out string prefix, out _);
 
             return prefix;
         }
 
         public static string GetLocalName(string qualifiedName)
         {
-            string prefix;
-            string localName;
-            GetQualifiedNameParts(qualifiedName, out prefix, out localName);
+            GetQualifiedNameParts(qualifiedName, out _, out string localName);
 
             return localName;
         }
@@ -153,6 +150,31 @@ namespace Newtonsoft.Json.Utilities
             }
 
             return value.ToString();
+        }
+
+        internal static RegexOptions GetRegexOptions(string optionsText)
+        {
+            RegexOptions options = RegexOptions.None;
+            foreach (char c in optionsText)
+            {
+                switch (c)
+                {
+                    case 'i':
+                        options |= RegexOptions.IgnoreCase;
+                        break;
+                    case 'm':
+                        options |= RegexOptions.Multiline;
+                        break;
+                    case 's':
+                        options |= RegexOptions.Singleline;
+                        break;
+                    case 'x':
+                        options |= RegexOptions.ExplicitCapture;
+                        break;
+                }
+            }
+
+            return options;
         }
     }
 }
