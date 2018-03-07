@@ -399,20 +399,24 @@ namespace Newtonsoft.Json.Serialization
                 SetExtensionDataDelegates(contract, extensionDataMember);
             }
 
+#if HAVE_RUNTIME_SERIALIZATION
             // serializing DirectoryInfo without ISerializable will stackoverflow
             // https://github.com/JamesNK/Newtonsoft.Json/issues/1541
             if (Array.IndexOf(BlacklistedTypeNames, objectType.FullName) != -1)
             {
                 contract.OnSerializingCallbacks.Add(ThrowUnableToSerializeError);
             }
+#endif
 
             return contract;
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         private static void ThrowUnableToSerializeError(object o, StreamingContext context)
         {
             throw new JsonSerializationException("Unable to serialize instance of '{0}'.".FormatWith(CultureInfo.InvariantCulture, o.GetType()));
         }
+#endif
 
         private MemberInfo GetExtensionDataMemberForType(Type type)
         {
@@ -762,7 +766,7 @@ namespace Newtonsoft.Json.Serialization
 #if NET35
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Portability", "CA1903:UseOnlyApiFromTargetedFramework", MessageId = "System.Runtime.Serialization.DataContractAttribute.#get_IsReference()")]
 #endif
-        private void InitializeContract(JsonContract contract)
+        protected void InitializeContract(JsonContract contract)
         {
             JsonContainerAttribute containerAttribute = JsonTypeReflector.GetCachedAttribute<JsonContainerAttribute>(contract.NonNullableUnderlyingType);
             if (containerAttribute != null)
@@ -1183,7 +1187,7 @@ namespace Newtonsoft.Json.Serialization
                 return CreateDictionaryContract(objectType);
             }
 
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
             // don't use GetDataContractAttribute because it looks for the attribute on base classes
             DataContractAttribute dataContractAttribute = JsonTypeReflector.GetCachedAttribute<DataContractAttribute>(objectType);
             if (dataContractAttribute != null)
@@ -1192,7 +1196,7 @@ namespace Newtonsoft.Json.Serialization
             }
 #endif
 
-            if (t == typeof(JToken) || t.IsSubclassOf(typeof(JToken)))
+			if (t == typeof(JToken) || t.IsSubclassOf(typeof(JToken)))
             {
                 return CreateLinqContract(objectType);
             }
