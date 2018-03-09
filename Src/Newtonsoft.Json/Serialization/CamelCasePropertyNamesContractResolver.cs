@@ -83,12 +83,17 @@ namespace Newtonsoft.Json.Serialization
             };
         }
 
-        /// <summary>
-        /// Resolves the contract for a given type.
-        /// </summary>
-        /// <param name="type">The type to resolve a contract for.</param>
-        /// <returns>The contract for a given type.</returns>
-        public override JsonContract ResolveContract(Type type)
+	    internal static void ClearStaticCache()
+	    {
+			_contractCache?.Clear();
+		}
+
+		/// <summary>
+		/// Resolves the contract for a given type.
+		/// </summary>
+		/// <param name="type">The type to resolve a contract for.</param>
+		/// <returns>The contract for a given type.</returns>
+		public override JsonContract ResolveContract(Type type)
         {
             if (type == null)
             {

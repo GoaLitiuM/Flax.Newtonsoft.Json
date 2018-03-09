@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -46,7 +46,16 @@ namespace Newtonsoft.Json.Utilities
 #endif
         private readonly Func<TKey, TValue> _creator;
 
-        public ThreadSafeStore(Func<TKey, TValue> creator)
+	    public void Clear()
+	    {
+#if HAVE_CONCURRENT_DICTIONARY
+		    _concurrentStore.Clear();
+#else
+            _store.Clear();
+#endif
+		}
+
+		public ThreadSafeStore(Func<TKey, TValue> creator)
         {
             ValidationUtils.ArgumentNotNull(creator, nameof(creator));
 
@@ -54,11 +63,14 @@ namespace Newtonsoft.Json.Utilities
 #if HAVE_CONCURRENT_DICTIONARY
             _concurrentStore = new ConcurrentDictionary<TKey, TValue>();
 #else
-            _store = new Dictionary<TKey, TValue>();
+			lock (_lock)
+            {
+				_store = new Dictionary<TKey, TValue>();
+			}
 #endif
-        }
+		}
 
-        public TValue Get(TKey key)
+		public TValue Get(TKey key)
         {
 #if HAVE_CONCURRENT_DICTIONARY
             return _concurrentStore.GetOrAdd(key, _creator);

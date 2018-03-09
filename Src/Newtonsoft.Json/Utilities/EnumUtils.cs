@@ -47,7 +47,12 @@ namespace Newtonsoft.Json.Utilities
 
         private static readonly ThreadSafeStore<Type, EnumInfo> ValuesAndNamesPerEnum = new ThreadSafeStore<Type, EnumInfo>(InitializeValuesAndNames);
 
-        private static EnumInfo InitializeValuesAndNames(Type enumType)
+	    internal static void ClearCache()
+	    {
+		    ValuesAndNamesPerEnum.Clear();
+	    }
+
+		private static EnumInfo InitializeValuesAndNames(Type enumType)
         {
             string[] names = Enum.GetNames(enumType);
             string[] resolvedNames = new string[names.Length];

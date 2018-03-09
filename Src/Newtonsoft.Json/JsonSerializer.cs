@@ -531,7 +531,18 @@ namespace Newtonsoft.Json
             _contractResolver = DefaultContractResolver.Instance;
         }
 
-        /// <summary>
+	    /// <summary>
+	    /// Clears all the cached types, attributes and methods to release references to any types of the other assemblies.
+	    /// </summary>
+	    public static void ClearCache()
+	    {
+		    JsonTypeReflector.ClearCache();
+		    CamelCasePropertyNamesContractResolver.ClearStaticCache();
+		    ((DefaultContractResolver)DefaultContractResolver.Instance).ClearCache();
+		    EnumUtils.ClearCache();
+	    }
+
+	    /// <summary>
         /// Creates a new <see cref="JsonSerializer"/> instance.
         /// The <see cref="JsonSerializer"/> will not use default settings 
         /// from <see cref="JsonConvert.DefaultSettings"/>.

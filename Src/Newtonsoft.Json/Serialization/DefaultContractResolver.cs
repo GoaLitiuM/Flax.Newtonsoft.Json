@@ -104,14 +104,20 @@ namespace Newtonsoft.Json.Serialization
 
         private readonly ThreadSafeStore<Type, JsonContract> _contractCache;
 
-        /// <summary>
-        /// Gets a value indicating whether members are being get and set using dynamic code generation.
-        /// This value is determined by the runtime permissions available.
-        /// </summary>
-        /// <value>
-        /// 	<c>true</c> if using dynamic code generation; otherwise, <c>false</c>.
-        /// </value>
-        public bool DynamicCodeGeneration => JsonTypeReflector.DynamicCodeGeneration;
+	    internal void ClearCache()
+	    {
+		    //_nameTable;
+		    _contractCache.Clear();
+	    }
+
+		/// <summary>
+		/// Gets a value indicating whether members are being get and set using dynamic code generation.
+		/// This value is determined by the runtime permissions available.
+		/// </summary>
+		/// <value>
+		/// 	<c>true</c> if using dynamic code generation; otherwise, <c>false</c>.
+		/// </value>
+		public bool DynamicCodeGeneration => JsonTypeReflector.DynamicCodeGeneration;
 
 #if !PORTABLE
         /// <summary>
