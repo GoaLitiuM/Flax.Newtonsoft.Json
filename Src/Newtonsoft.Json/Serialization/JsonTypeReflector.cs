@@ -68,7 +68,15 @@ namespace Newtonsoft.Json.Serialization
         private static ReflectionObject _metadataTypeAttributeReflectionObject;
 #endif
 
-        public static T GetCachedAttribute<T>(object attributeProvider) where T : Attribute
+	    public static void ClearCache()
+	    {
+		    CreatorCache.Clear();
+#if !(NET20 || DOTNET)
+		    AssociatedMetadataTypesCache.Clear();
+#endif
+	    }
+
+	    public static T GetCachedAttribute<T>(object attributeProvider) where T : Attribute
         {
             return CachedAttributeGetter<T>.GetAttribute(attributeProvider);
         }
