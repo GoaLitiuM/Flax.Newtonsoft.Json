@@ -539,6 +539,10 @@ namespace Newtonsoft.Json
 		    JsonTypeReflector.ClearCache();
 		    CamelCasePropertyNamesContractResolver.ClearStaticCache();
 		    ((DefaultContractResolver)DefaultContractResolver.Instance).ClearCache();
+		    DefaultSerializationBinder.ClearCache();
+		    KeyValuePairConverter.ClearCache();
+		    JsonDynamicContract.ClearCache();
+		    ConvertUtils.ClearCache();
 		    EnumUtils.ClearCache();
 	    }
 

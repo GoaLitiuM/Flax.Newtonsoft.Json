@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -49,6 +49,11 @@ namespace Newtonsoft.Json.Converters
 
             return ReflectionObject.Create(t, t.GetConstructor(new[] { keyType, valueType }), KeyName, ValueName);
         }
+
+	    internal static void ClearCache()
+	    {
+			ReflectionObjectPerType.Clear();
+	    }
 
         /// <summary>
         /// Writes the JSON representation of the object.
