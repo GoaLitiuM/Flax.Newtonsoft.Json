@@ -57,6 +57,11 @@ namespace Newtonsoft.Json.Serialization
             _typeCache = new ThreadSafeStore<TypeNameKey, Type>(GetTypeFromTypeNameKey);
         }
 
+	    internal static void ClearCache()
+	    {
+		    Instance._typeCache.Clear();
+	    }
+
         private Type GetTypeFromTypeNameKey(TypeNameKey typeNameKey)
         {
             string assemblyName = typeNameKey.AssemblyName;

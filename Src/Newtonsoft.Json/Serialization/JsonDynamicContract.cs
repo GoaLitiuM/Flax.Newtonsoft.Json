@@ -54,6 +54,13 @@ namespace Newtonsoft.Json.Serialization
         private readonly ThreadSafeStore<string, CallSite<Func<CallSite, object, object, object>>> _callSiteSetters =
             new ThreadSafeStore<string, CallSite<Func<CallSite, object, object, object>>>(CreateCallSiteSetter);
 
+	    private static event Action ClearCacheEvent;
+		
+		internal static void ClearCache()
+	    {
+			ClearCacheEvent?.Invoke();
+	    }
+
         private static CallSite<Func<CallSite, object, object>> CreateCallSiteGetter(string name)
         {
             GetMemberBinder getMemberBinder = (GetMemberBinder)DynamicUtils.BinderWrapper.GetMember(name, typeof(DynamicUtils));
@@ -68,19 +75,32 @@ namespace Newtonsoft.Json.Serialization
             return CallSite<Func<CallSite, object, object, object>>.Create(new NoThrowSetBinderMember(binder));
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="JsonDynamicContract"/> class.
-        /// </summary>
-        /// <param name="underlyingType">The underlying type for the contract.</param>
-        public JsonDynamicContract(Type underlyingType)
-            : base(underlyingType)
-        {
-            ContractType = JsonContractType.Dynamic;
+	    /// <summary>
+	    /// Initializes a new instance of the <see cref="JsonDynamicContract"/> class.
+	    /// </summary>
+	    /// <param name="underlyingType">The underlying type for the contract.</param>
+	    public JsonDynamicContract(Type underlyingType)
+		    : base(underlyingType)
+	    {
+		    ContractType = JsonContractType.Dynamic;
 
-            Properties = new JsonPropertyCollection(UnderlyingType);
-        }
+		    Properties = new JsonPropertyCollection(UnderlyingType);
 
-        internal bool TryGetMember(IDynamicMetaObjectProvider dynamicProvider, string name, out object value)
+		    ClearCacheEvent += OnClearCache;
+	    }
+
+	    private void OnClearCache()
+	    {
+		    _callSiteGetters.Clear();
+		    _callSiteSetters.Clear();
+		}
+
+	    ~JsonDynamicContract()
+	    {
+		    ClearCacheEvent -= OnClearCache;
+		}
+
+	    internal bool TryGetMember(IDynamicMetaObjectProvider dynamicProvider, string name, out object value)
         {
             ValidationUtils.ArgumentNotNull(dynamicProvider, nameof(dynamicProvider));
 

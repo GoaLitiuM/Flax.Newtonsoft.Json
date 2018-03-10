@@ -284,6 +284,11 @@ namespace Newtonsoft.Json.Utilities
         private static readonly ThreadSafeStore<TypeConvertKey, Func<object, object>> CastConverters =
             new ThreadSafeStore<TypeConvertKey, Func<object, object>>(CreateCastConverter);
 
+	    internal static void ClearCache()
+	    {
+		    CastConverters.Clear();
+		}
+
         private static Func<object, object> CreateCastConverter(TypeConvertKey t)
         {
             MethodInfo castMethodInfo = t.TargetType.GetMethod("op_Implicit", new[] { t.InitialType })
