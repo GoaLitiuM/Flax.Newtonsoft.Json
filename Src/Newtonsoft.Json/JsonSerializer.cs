@@ -536,15 +536,24 @@ namespace Newtonsoft.Json
 	    /// </summary>
 	    public static void ClearCache()
 	    {
-		    JsonTypeReflector.ClearCache();
-		    CamelCasePropertyNamesContractResolver.ClearStaticCache();
-		    ((DefaultContractResolver)DefaultContractResolver.Instance).ClearCache();
+			JsonTypeReflector.ClearCache();
+		    BinaryConverter.ClearCache();
+#if HAVE_ENTITY_FRAMEWORK
+		    EntityKeyMemberConverter.ClearCache();
+#endif
+#if HAVE_FSHARP_TYPES
+		    DiscriminatedUnionConverter.ClearCache();
+#endif
+			CamelCasePropertyNamesContractResolver.ClearStaticCache();
+		    DefaultContractResolver.ClearStaticCache();
 		    DefaultSerializationBinder.ClearCache();
 		    KeyValuePairConverter.ClearCache();
-		    JsonDynamicContract.ClearCache();
-		    ConvertUtils.ClearCache();
+#if HAVE_DYNAMIC
+			JsonDynamicContract.ClearCache();
+#endif
+			ConvertUtils.ClearCache();
 		    EnumUtils.ClearCache();
-	    }
+		}
 
 	    /// <summary>
         /// Creates a new <see cref="JsonSerializer"/> instance.

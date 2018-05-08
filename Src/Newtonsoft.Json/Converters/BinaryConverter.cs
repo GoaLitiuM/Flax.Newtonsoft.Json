@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -45,13 +45,20 @@ namespace Newtonsoft.Json.Converters
         private static ReflectionObject _reflectionObject;
 #endif
 
-        /// <summary>
-        /// Writes the JSON representation of the object.
-        /// </summary>
-        /// <param name="writer">The <see cref="JsonWriter"/> to write to.</param>
-        /// <param name="value">The value.</param>
-        /// <param name="serializer">The calling serializer.</param>
-        public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
+	    internal static void ClearCache()
+	    {
+#if HAVE_LINQ
+		    _reflectionObject?.Clear();
+#endif
+	    }
+
+		/// <summary>
+		/// Writes the JSON representation of the object.
+		/// </summary>
+		/// <param name="writer">The <see cref="JsonWriter"/> to write to.</param>
+		/// <param name="value">The value.</param>
+		/// <param name="serializer">The calling serializer.</param>
+		public override void WriteJson(JsonWriter writer, object value, JsonSerializer serializer)
         {
             if (value == null)
             {

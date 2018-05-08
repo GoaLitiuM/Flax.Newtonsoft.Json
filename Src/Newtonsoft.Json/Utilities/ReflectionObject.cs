@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -71,6 +71,11 @@ namespace Newtonsoft.Json.Utilities
         {
             return Members[member].MemberType;
         }
+
+	    public void Clear()
+	    {
+		    Members.Clear();
+		}
 
         public static ReflectionObject Create(Type t, params string[] memberNames)
         {
