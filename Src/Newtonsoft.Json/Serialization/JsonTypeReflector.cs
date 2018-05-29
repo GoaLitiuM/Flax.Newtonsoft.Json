@@ -68,11 +68,12 @@ namespace Newtonsoft.Json.Serialization
         private static ReflectionObject _metadataTypeAttributeReflectionObject;
 #endif
 
-	    public static void ClearCache()
+	    internal static void ClearCache()
 	    {
 		    CreatorCache.Clear();
 #if !(NET20 || DOTNET)
 		    AssociatedMetadataTypesCache.Clear();
+		    _metadataTypeAttributeReflectionObject?.Clear();
 #endif
 	    }
 

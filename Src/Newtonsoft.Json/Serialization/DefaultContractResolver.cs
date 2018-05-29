@@ -104,11 +104,18 @@ namespace Newtonsoft.Json.Serialization
 
         private readonly ThreadSafeStore<Type, JsonContract> _contractCache;
 
+	    private static event Action ClearCacheEvent;
+
 	    internal void ClearCache()
 	    {
-		    //_nameTable;
+			_nameTable.Clear();
 		    _contractCache.Clear();
-	    }
+		}
+
+	    internal static void ClearStaticCache()
+	    {
+		    ClearCacheEvent?.Invoke();
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether members are being get and set using dynamic code generation.
@@ -192,18 +199,25 @@ namespace Newtonsoft.Json.Serialization
 #pragma warning restore 618
 
             _contractCache = new ThreadSafeStore<Type, JsonContract>(CreateContract);
+
+	        ClearCacheEvent += ClearCache;
         }
 
-        /// <summary>
-        /// Resolves the contract for a given type.
-        /// </summary>
-        /// <param name="type">The type to resolve a contract for.</param>
-        /// <returns>The contract for a given type.</returns>
-        public virtual JsonContract ResolveContract(Type type)
+	    ~DefaultContractResolver()
+	    {
+		    ClearCacheEvent -= ClearCache;
+		}
+
+		/// <summary>
+		/// Resolves the contract for a given type.
+		/// </summary>
+		/// <param name="type">The type to resolve a contract for.</param>
+		/// <returns>The contract for a given type.</returns>
+		public virtual JsonContract ResolveContract(Type type)
         {
             ValidationUtils.ArgumentNotNull(type, nameof(type));
 
-            return _contractCache.Get(type);
+	        return _contractCache.Get(type);
         }
 
         /// <summary>

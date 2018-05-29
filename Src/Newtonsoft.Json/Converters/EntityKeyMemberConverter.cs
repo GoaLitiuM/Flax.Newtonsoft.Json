@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -43,6 +43,11 @@ namespace Newtonsoft.Json.Converters
         private const string ValuePropertyName = "Value";
 
         private static ReflectionObject _reflectionObject;
+
+	    internal static void ClearCache()
+	    {
+		    _reflectionObject.Clear();
+	    }
 
         /// <summary>
         /// Writes the JSON representation of the object.

@@ -1,4 +1,4 @@
-﻿#region License
+#region License
 // Copyright (c) 2007 James Newton-King
 //
 // Permission is hereby granted, free of charge, to any person
@@ -45,7 +45,7 @@ namespace Newtonsoft.Json.Converters
     /// </summary>
     public class DiscriminatedUnionConverter : JsonConverter
     {
-        #region UnionDefinition
+#region UnionDefinition
         internal class Union
         {
             public List<UnionCase> Cases;
@@ -60,13 +60,19 @@ namespace Newtonsoft.Json.Converters
             public FSharpFunction FieldReader;
             public FSharpFunction Constructor;
         }
-        #endregion
+#endregion
 
         private const string CasePropertyName = "Case";
         private const string FieldsPropertyName = "Fields";
 
         private static readonly ThreadSafeStore<Type, Union> UnionCache = new ThreadSafeStore<Type, Union>(CreateUnion);
         private static readonly ThreadSafeStore<Type, Type> UnionTypeLookupCache = new ThreadSafeStore<Type, Type>(CreateUnionTypeLookup);
+
+		internal static void ClearCache()
+	    {
+		    UnionCache.Clear();
+		    UnionTypeLookupCache.Clear();
+	    }
 
         private static Type CreateUnionTypeLookup(Type t)
         {
