@@ -67,6 +67,20 @@ namespace Newtonsoft.Json.Utilities
                 }
             }
 
+            if (objA is Array arrayA && objB is Array arrayB)
+            {
+                if (arrayA.Length != arrayB.Length)
+                    return false;
+
+                for (int i = 0; i < arrayA.Length; i++)
+                {
+                    if (!ValueEquals(arrayA.GetValue(i), arrayB.GetValue(i)))
+                        return false;
+                }
+
+                return true;
+            }
+
             return objA.Equals(objB);
         }
 

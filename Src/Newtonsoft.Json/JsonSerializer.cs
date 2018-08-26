@@ -1016,6 +1016,61 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
+        /// Serializes the specified <see cref="Object"/> difference to the other object of the same type. and writes the JSON structure using the specified <see cref="TextWriter"/>.
+        /// </summary>
+        /// <param name="textWriter">The <see cref="TextWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(TextWriter textWriter, object value, object other)
+        {
+	        SerializeDiff(new JsonTextWriter(textWriter), value, other);
+        }
+
+        /// <summary>
+        /// Serializes the specified <see cref="Object"/> difference to the other object of the same type. Writes the JSON structure using the specified <see cref="JsonWriter"/>.
+        /// </summary>
+        /// <param name="jsonWriter">The <see cref="JsonWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="objectType">
+        /// The type of the value being serialized.
+        /// This parameter is used when <see cref="JsonSerializer.TypeNameHandling"/> is <see cref="Json.TypeNameHandling.Auto"/> to write out the type name if the type of the value does not match.
+        /// Specifying the type is optional.
+        /// </param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(JsonWriter jsonWriter, object value, Type objectType, object other)
+        {
+	        SerializeDiffInternal(jsonWriter, value, objectType, other);
+        }
+
+        /// <summary>
+        /// Serializes the specified <see cref="Object"/> difference to the other object of the same type. Writes the JSON structure using the specified <see cref="TextWriter"/>.
+        /// </summary>
+        /// <param name="textWriter">The <see cref="TextWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="objectType">
+        /// The type of the value being serialized.
+        /// This parameter is used when <see cref="TypeNameHandling"/> is Auto to write out the type name if the type of the value does not match.
+        /// Specifying the type is optional.
+        /// </param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(TextWriter textWriter, object value, Type objectType, object other)
+        {
+	        SerializeDiff(new JsonTextWriter(textWriter), value, objectType, other);
+        }
+
+        /// <summary>
+        /// Serializes the specified <see cref="Object"/> and writes the JSON structure
+        /// using the specified <see cref="JsonWriter"/>.
+        /// </summary>
+        /// <param name="jsonWriter">The <see cref="JsonWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(JsonWriter jsonWriter, object value, object other)
+        {
+	        SerializeDiffInternal(jsonWriter, value, null, other);
+        }
+
+        /// <summary>
         /// Serializes the specified <see cref="Object"/> and writes the JSON structure
         /// using the specified <see cref="TextWriter"/>.
         /// </summary>
@@ -1082,7 +1137,111 @@ namespace Newtonsoft.Json
         }
 #endif
 
-		internal virtual void SerializeInternal(JsonWriter jsonWriter, object value, Type objectType)
+        internal virtual void SerializeDiffInternal(JsonWriter jsonWriter, object value, Type objectType, object other)
+        {
+            ValidationUtils.ArgumentNotNull(jsonWriter, nameof(jsonWriter));
+
+            // set serialization options onto writer
+            Formatting? previousFormatting = null;
+            if (_formatting != null && jsonWriter.Formatting != _formatting)
+            {
+                previousFormatting = jsonWriter.Formatting;
+                jsonWriter.Formatting = _formatting.GetValueOrDefault();
+            }
+
+            DateFormatHandling? previousDateFormatHandling = null;
+            if (_dateFormatHandling != null && jsonWriter.DateFormatHandling != _dateFormatHandling)
+            {
+                previousDateFormatHandling = jsonWriter.DateFormatHandling;
+                jsonWriter.DateFormatHandling = _dateFormatHandling.GetValueOrDefault();
+            }
+
+            DateTimeZoneHandling? previousDateTimeZoneHandling = null;
+            if (_dateTimeZoneHandling != null && jsonWriter.DateTimeZoneHandling != _dateTimeZoneHandling)
+            {
+                previousDateTimeZoneHandling = jsonWriter.DateTimeZoneHandling;
+                jsonWriter.DateTimeZoneHandling = _dateTimeZoneHandling.GetValueOrDefault();
+            }
+
+            FloatFormatHandling? previousFloatFormatHandling = null;
+            if (_floatFormatHandling != null && jsonWriter.FloatFormatHandling != _floatFormatHandling)
+            {
+                previousFloatFormatHandling = jsonWriter.FloatFormatHandling;
+                jsonWriter.FloatFormatHandling = _floatFormatHandling.GetValueOrDefault();
+            }
+
+            StringEscapeHandling? previousStringEscapeHandling = null;
+            if (_stringEscapeHandling != null && jsonWriter.StringEscapeHandling != _stringEscapeHandling)
+            {
+                previousStringEscapeHandling = jsonWriter.StringEscapeHandling;
+                jsonWriter.StringEscapeHandling = _stringEscapeHandling.GetValueOrDefault();
+            }
+
+            CultureInfo previousCulture = null;
+            if (_culture != null && !_culture.Equals(jsonWriter.Culture))
+            {
+                previousCulture = jsonWriter.Culture;
+                jsonWriter.Culture = _culture;
+            }
+
+            string previousDateFormatString = null;
+            if (_dateFormatStringSet && jsonWriter.DateFormatString != _dateFormatString)
+            {
+                previousDateFormatString = jsonWriter.DateFormatString;
+                jsonWriter.DateFormatString = _dateFormatString;
+            }
+
+#if HAVE_TRACE_WRITER
+	        TraceJsonWriter traceJsonWriter = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+		        ? new TraceJsonWriter(jsonWriter)
+				: null;
+	        var tWriter = traceJsonWriter ?? jsonWriter;
+#else
+            var tWriter = jsonWriter;
+#endif
+
+            JsonSerializerInternalWriter serializerWriter = new JsonSerializerInternalWriter(this);
+            serializerWriter.SerializeDiff(tWriter, value, objectType, other);
+
+#if HAVE_TRACE_WRITER
+			if (traceJsonWriter != null)
+            {
+                TraceWriter.Trace(TraceLevel.Verbose, traceJsonWriter.GetSerializedJsonMessage(), null);
+            }
+#endif
+
+            // reset writer back to previous options
+            if (previousFormatting != null)
+            {
+                jsonWriter.Formatting = previousFormatting.GetValueOrDefault();
+            }
+            if (previousDateFormatHandling != null)
+            {
+                jsonWriter.DateFormatHandling = previousDateFormatHandling.GetValueOrDefault();
+            }
+            if (previousDateTimeZoneHandling != null)
+            {
+                jsonWriter.DateTimeZoneHandling = previousDateTimeZoneHandling.GetValueOrDefault();
+            }
+            if (previousFloatFormatHandling != null)
+            {
+                jsonWriter.FloatFormatHandling = previousFloatFormatHandling.GetValueOrDefault();
+            }
+            if (previousStringEscapeHandling != null)
+            {
+                jsonWriter.StringEscapeHandling = previousStringEscapeHandling.GetValueOrDefault();
+            }
+            if (_dateFormatStringSet)
+            {
+                jsonWriter.DateFormatString = previousDateFormatString;
+            }
+            if (previousCulture != null)
+            {
+                jsonWriter.Culture = previousCulture;
+            }
+        }
+
+        internal virtual void SerializeInternal(JsonWriter jsonWriter, object value, Type objectType)
         {
             ValidationUtils.ArgumentNotNull(jsonWriter, nameof(jsonWriter));
 
