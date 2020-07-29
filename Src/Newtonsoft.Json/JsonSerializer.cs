@@ -537,7 +537,9 @@ namespace Newtonsoft.Json
 	    public static void ClearCache()
 	    {
 			JsonTypeReflector.ClearCache();
+#if HAVE_LINQ || HAVE_ADO_NET
 		    BinaryConverter.ClearCache();
+#endif
 #if HAVE_ENTITY_FRAMEWORK
 		    EntityKeyMemberConverter.ClearCache();
 #endif
