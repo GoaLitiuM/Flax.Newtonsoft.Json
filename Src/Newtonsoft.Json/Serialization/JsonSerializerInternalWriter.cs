@@ -273,7 +273,7 @@ namespace Newtonsoft.Json.Serialization
 				writer.WriteNull();
 				return;
 			}
-			if (other == null)
+			if (other == null || value.GetType() != other.GetType())
 			{
 				SerializeValue(writer, value, valueContract, member, containerContract, containerProperty);
 				return;
