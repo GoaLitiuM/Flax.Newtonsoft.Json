@@ -273,7 +273,8 @@ namespace Newtonsoft.Json.Serialization
 				writer.WriteNull();
 				return;
 			}
-			if (other == null || value.GetType() != other.GetType())
+			var valueType = value.GetType();
+			if (other == null || valueType != other.GetType())
 			{
 				SerializeValue(writer, value, valueContract, member, containerContract, containerProperty);
 				return;
@@ -296,7 +297,14 @@ namespace Newtonsoft.Json.Serialization
 			switch (valueContract.ContractType)
 			{
 				case JsonContractType.Object:
-					SerializeObjectDiff(writer, value, other, (JsonObjectContract)valueContract, member, containerContract, containerProperty);
+					if (valueType.IsValueType)
+					{
+						SerializeValue(writer, value, valueContract, member, containerContract, containerProperty);
+					}
+					else
+					{
+						SerializeObjectDiff(writer, value, other, (JsonObjectContract)valueContract, member, containerContract, containerProperty);
+					}
 					break;
 				case JsonContractType.Array:
 					JsonArrayContract arrayContract = (JsonArrayContract)valueContract;
