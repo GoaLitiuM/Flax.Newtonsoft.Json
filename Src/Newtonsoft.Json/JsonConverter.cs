@@ -43,6 +43,18 @@ namespace Newtonsoft.Json
         public abstract void WriteJson(JsonWriter writer, object value, JsonSerializer serializer);
 
         /// <summary>
+        /// Writes the JSON representation of the object diff compared to other instance of the object (the same type).
+        /// </summary>
+        /// <param name="writer">The <see cref="JsonWriter"/> to write to.</param>
+        /// <param name="value">The value.</param>
+        /// <param name="other">The other value (the same type).</param>
+        /// <param name="serializer">The calling serializer.</param>
+        public virtual void WriteJsonDiff(JsonWriter writer, object value, object other, JsonSerializer serializer)
+        {
+	        WriteJson(writer, value, serializer);
+        }
+
+        /// <summary>
         /// Reads the JSON representation of the object.
         /// </summary>
         /// <param name="reader">The <see cref="JsonReader"/> to read from.</param>
@@ -72,6 +84,12 @@ namespace Newtonsoft.Json
         /// </summary>
         /// <value><c>true</c> if this <see cref="JsonConverter"/> can write JSON; otherwise, <c>false</c>.</value>
         public virtual bool CanWrite => true;
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="JsonConverter"/> can write JSON for object difference.
+        /// </summary>
+        /// <value><c>true</c> if this <see cref="JsonConverter"/> can write JSON diff; otherwise, <c>false</c>.</value>
+        public virtual bool CanWriteDiff => false;
     }
 
     /// <summary>

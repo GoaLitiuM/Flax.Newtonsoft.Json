@@ -288,6 +288,11 @@ namespace Newtonsoft.Json.Serialization
 				Serializer.GetMatchingConverter(valueContract.UnderlyingType) ??
 				valueContract.InternalConverter;
 
+			if (converter != null && converter.CanWriteDiff)
+			{
+				SerializeConvertableDiff(writer, converter, value, other, valueContract, containerContract, containerProperty);
+				return;
+			}
 			if (converter != null && converter.CanWrite)
 			{
 				SerializeConvertable(writer, converter, value, valueContract, containerContract, containerProperty);
@@ -948,6 +953,41 @@ namespace Newtonsoft.Json.Serialization
 #endif
 
 				converter.WriteJson(writer, value, GetInternalSerializer());
+
+#if HAVE_TRACE_WRITER
+				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+                {
+                    TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Finished serializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, value.GetType(), converter.GetType())), null);
+                }
+#endif
+
+				_serializeStack.RemoveAt(_serializeStack.Count - 1);
+            }
+        }
+
+        private void SerializeConvertableDiff(JsonWriter writer, JsonConverter converter, object value, object other, JsonContract contract, JsonContainerContract collectionContract, JsonProperty containerProperty)
+        {
+            if (ShouldWriteReference(value, null, contract, collectionContract, containerProperty))
+            {
+                WriteReference(writer, value);
+            }
+            else
+            {
+                if (!CheckForCircularReference(writer, value, null, contract, collectionContract, containerProperty))
+                {
+                    return;
+                }
+
+                _serializeStack.Add(value);
+
+#if HAVE_TRACE_WRITER
+				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
+                {
+                    TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(null, writer.Path, "Started serializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, value.GetType(), converter.GetType())), null);
+                }
+#endif
+
+				converter.WriteJsonDiff(writer, value, other, GetInternalSerializer());
 
 #if HAVE_TRACE_WRITER
 				if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
