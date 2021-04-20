@@ -1609,6 +1609,11 @@ namespace Newtonsoft.Json.Serialization
 
             int? previousErrorIndex = null;
 
+            if (!contract.IsArray)
+            {
+                list.Clear();
+            }
+
             bool finished = false;
             do
             {
