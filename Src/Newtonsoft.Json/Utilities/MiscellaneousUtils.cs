@@ -89,18 +89,22 @@ namespace Newtonsoft.Json.Utilities
                 }
             }
 
-            if (objA is Array arrayA && objB is Array arrayB)
+            // Diff on collections
+            if (objA is IList aList && objB is IList bList)
             {
-                if (arrayA.Length != arrayB.Length)
-                    return false;
-
-                for (int i = 0; i < arrayA.Length; i++)
-                {
-                    if (!ValueEquals(arrayA.GetValue(i), arrayB.GetValue(i)))
-                        return false;
-                }
-
-                return true;
+	            if (aList.Count != bList.Count)
+		            return false;
+            }
+            if (objA is IEnumerable aEnumerable && objB is IEnumerable bEnumerable)
+            {
+	            var aEnumerator = aEnumerable.GetEnumerator();
+	            var bEnumerator = bEnumerable.GetEnumerator();
+	            while (aEnumerator.MoveNext())
+	            {
+		            if (!bEnumerator.MoveNext() || !ValueEquals(aEnumerator.Current, bEnumerator.Current))
+			            return false;
+	            }
+	            return !bEnumerator.MoveNext();
             }
 
             return objA.Equals(objB);
