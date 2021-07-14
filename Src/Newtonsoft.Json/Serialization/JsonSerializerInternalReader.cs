@@ -1335,6 +1335,8 @@ namespace Newtonsoft.Json.Serialization
             JsonConverter dictionaryValueConverter = contract.ItemConverter ?? GetConverter(contract.ItemContract, null, contract, containerProperty);
             PrimitiveTypeCode keyTypeCode = (contract.KeyContract is JsonPrimitiveContract keyContract) ? keyContract.TypeCode : PrimitiveTypeCode.Empty;
 
+            dictionary.Clear();
+
             bool finished = false;
             do
             {
