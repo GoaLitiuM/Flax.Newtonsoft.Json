@@ -27,7 +27,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 #if !HAVE_LINQ
 using Newtonsoft.Json.Utilities.LinqBridge;
 #else
@@ -48,6 +50,11 @@ namespace Newtonsoft.Json.Utilities
 
         private static readonly ThreadSafeStore<StructMultiKey<Type, NamingStrategy?>, EnumInfo> ValuesAndNamesPerEnum = new ThreadSafeStore<StructMultiKey<Type, NamingStrategy?>, EnumInfo>(InitializeValuesAndNames);
 
+        internal static void ClearCache()
+	    {
+		    ValuesAndNamesPerEnum.Clear();
+	    }
+
         private static EnumInfo InitializeValuesAndNames(StructMultiKey<Type, NamingStrategy?> key)
         {
             Type enumType = key.Value1;
@@ -63,7 +70,7 @@ namespace Newtonsoft.Json.Utilities
                 values[i] = ToUInt64(f.GetValue(null)!);
 
                 string resolvedName;
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
                 string? specifiedName = f.GetCustomAttributes(typeof(EnumMemberAttribute), true)
                          .Cast<EnumMemberAttribute>()
                          .Select(a => a.Value)

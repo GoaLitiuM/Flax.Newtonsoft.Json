@@ -83,6 +83,12 @@ namespace Newtonsoft.Json.Converters
         private static readonly ThreadSafeStore<Type, Union> UnionCache = new ThreadSafeStore<Type, Union>(CreateUnion);
         private static readonly ThreadSafeStore<Type, Type> UnionTypeLookupCache = new ThreadSafeStore<Type, Type>(CreateUnionTypeLookup);
 
+		internal static void ClearCache()
+	    {
+		    UnionCache.Clear();
+		    UnionTypeLookupCache.Clear();
+	    }
+
         private static Type CreateUnionTypeLookup(Type t)
         {
             // this lookup is because cases with fields are derived from union type

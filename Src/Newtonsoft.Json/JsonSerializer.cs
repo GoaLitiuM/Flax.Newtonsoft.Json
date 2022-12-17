@@ -29,11 +29,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization.Formatters;
+#endif
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json.Utilities;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using ErrorEventArgs = Newtonsoft.Json.Serialization.ErrorEventArgs;
 using System.Runtime.CompilerServices;
 using System.Diagnostics.CodeAnalysis;
@@ -58,10 +62,14 @@ namespace Newtonsoft.Json
         internal MetadataPropertyHandling _metadataPropertyHandling;
         internal JsonConverterCollection? _converters;
         internal IContractResolver _contractResolver;
+#if HAVE_TRACE_WRITER
         internal ITraceWriter? _traceWriter;
+#endif
         internal IEqualityComparer? _equalityComparer;
         internal ISerializationBinder _serializationBinder;
+#if HAVE_RUNTIME_SERIALIZATION
         internal StreamingContext _context;
+#endif
         private IReferenceResolver? _referenceResolver;
 
         private Formatting? _formatting;
@@ -99,7 +107,7 @@ namespace Newtonsoft.Json
                 _referenceResolver = value;
             }
         }
-
+        
         /// <summary>
         /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
         /// </summary>
@@ -148,6 +156,7 @@ namespace Newtonsoft.Json
             }
         }
 
+#if HAVE_TRACE_WRITER
         /// <summary>
         /// Gets or sets the <see cref="ITraceWriter"/> used by the serializer when writing trace messages.
         /// </summary>
@@ -157,6 +166,7 @@ namespace Newtonsoft.Json
             get => _traceWriter;
             set => _traceWriter = value;
         }
+#endif
 
         /// <summary>
         /// Gets or sets the equality comparer used by the serializer when comparing references.
@@ -190,7 +200,7 @@ namespace Newtonsoft.Json
                 _typeNameHandling = value;
             }
         }
-
+        
         /// <summary>
         /// Gets or sets how a type name assembly is written and resolved by the serializer.
         /// The default value is <see cref="FormatterAssemblyStyle.Simple" />.
@@ -404,6 +414,7 @@ namespace Newtonsoft.Json
             set => _contractResolver = value ?? DefaultContractResolver.Instance;
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Gets or sets the <see cref="StreamingContext"/> used by the serializer when invoking serialization callback methods.
         /// </summary>
@@ -413,6 +424,7 @@ namespace Newtonsoft.Json
             get => _context;
             set => _context = value;
         }
+#endif
 
         /// <summary>
         /// Indicates how JSON text output is formatted.
@@ -563,12 +575,40 @@ namespace Newtonsoft.Json
             _constructorHandling = JsonSerializerSettings.DefaultConstructorHandling;
             _typeNameHandling = JsonSerializerSettings.DefaultTypeNameHandling;
             _metadataPropertyHandling = JsonSerializerSettings.DefaultMetadataPropertyHandling;
-            _context = JsonSerializerSettings.DefaultContext;
             _serializationBinder = DefaultSerializationBinder.Instance;
+#if HAVE_RUNTIME_SERIALIZATION
+            _context = JsonSerializerSettings.DefaultContext;
+#endif
 
             _culture = JsonSerializerSettings.DefaultCulture;
             _contractResolver = DefaultContractResolver.Instance;
         }
+
+	    /// <summary>
+	    /// Clears all the cached types, attributes and methods to release references to any types of the other assemblies.
+	    /// </summary>
+	    public static void ClearCache()
+	    {
+			JsonTypeReflector.ClearCache();
+#if HAVE_LINQ || HAVE_ADO_NET
+		    BinaryConverter.ClearCache();
+#endif
+#if HAVE_ENTITY_FRAMEWORK
+		    EntityKeyMemberConverter.ClearCache();
+#endif
+#if HAVE_FSHARP_TYPES
+		    DiscriminatedUnionConverter.ClearCache();
+#endif
+			CamelCasePropertyNamesContractResolver.ClearStaticCache();
+		    DefaultContractResolver.ClearStaticCache();
+		    DefaultSerializationBinder.ClearCache();
+		    KeyValuePairConverter.ClearCache();
+#if HAVE_DYNAMIC
+			JsonDynamicContract.ClearCache();
+#endif
+			ConvertUtils.ClearCache();
+		    EnumUtils.ClearCache();
+		}
 
         /// <summary>
         /// Creates a new <see cref="JsonSerializer"/> instance.
@@ -701,10 +741,12 @@ namespace Newtonsoft.Json
             {
                 serializer.ConstructorHandling = settings.ConstructorHandling;
             }
+#if HAVE_RUNTIME_SERIALIZATION
             if (settings._context != null)
             {
                 serializer.Context = settings.Context;
             }
+#endif
             if (settings._checkAdditionalContent != null)
             {
                 serializer._checkAdditionalContent = settings._checkAdditionalContent;
@@ -723,10 +765,12 @@ namespace Newtonsoft.Json
             {
                 serializer.ReferenceResolver = settings.ReferenceResolverProvider();
             }
+#if HAVE_TRACE_WRITER
             if (settings.TraceWriter != null)
             {
                 serializer.TraceWriter = settings.TraceWriter;
             }
+#endif
             if (settings.EqualityComparer != null)
             {
                 serializer.EqualityComparer = settings.EqualityComparer;
@@ -818,17 +862,24 @@ namespace Newtonsoft.Json
                 out int? previousMaxDepth,
                 out string? previousDateFormatString);
 
+#if HAVE_TRACE_WRITER
             TraceJsonReader? traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? CreateTraceJsonReader(reader)
                 : null;
+	        var tReader = traceJsonReader ?? reader;
+#else
+			var tReader = reader;
+#endif
 
             JsonSerializerInternalReader serializerReader = new JsonSerializerInternalReader(this);
-            serializerReader.Populate(traceJsonReader ?? reader, target);
+            serializerReader.Populate(tReader, target);
 
+#if HAVE_TRACE_WRITER
             if (traceJsonReader != null)
             {
                 TraceWriter!.Trace(TraceLevel.Verbose, traceJsonReader.GetDeserializedJsonMessage(), null);
             }
+#endif
 
             ResetReader(reader, previousCulture, previousDateTimeZoneHandling, previousDateParseHandling, previousFloatParseHandling, previousMaxDepth, previousDateFormatString);
         }
@@ -896,17 +947,24 @@ namespace Newtonsoft.Json
                 out int? previousMaxDepth,
                 out string? previousDateFormatString);
 
+#if HAVE_TRACE_WRITER
             TraceJsonReader? traceJsonReader = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? CreateTraceJsonReader(reader)
                 : null;
+	        var tReader = traceJsonReader ?? reader;
+#else
+			var tReader = reader;
+#endif
 
             JsonSerializerInternalReader serializerReader = new JsonSerializerInternalReader(this);
-            object? value = serializerReader.Deserialize(traceJsonReader ?? reader, objectType, CheckAdditionalContent);
+            object? value = serializerReader.Deserialize(tReader, objectType, CheckAdditionalContent);
 
+#if HAVE_TRACE_WRITER
             if (traceJsonReader != null)
             {
                 TraceWriter!.Trace(TraceLevel.Verbose, traceJsonReader.GetDeserializedJsonMessage(), null);
             }
+#endif
 
             ResetReader(reader, previousCulture, previousDateTimeZoneHandling, previousDateParseHandling, previousFloatParseHandling, previousMaxDepth, previousDateFormatString);
 
@@ -1020,6 +1078,61 @@ namespace Newtonsoft.Json
         }
 
         /// <summary>
+        /// Serializes the specified <see cref="Object"/> difference to the other object of the same type. and writes the JSON structure using the specified <see cref="TextWriter"/>.
+        /// </summary>
+        /// <param name="textWriter">The <see cref="TextWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(TextWriter textWriter, object value, object other)
+        {
+	        SerializeDiff(new JsonTextWriter(textWriter), value, other);
+        }
+
+        /// <summary>
+        /// Serializes the specified <see cref="Object"/> difference to the other object of the same type. Writes the JSON structure using the specified <see cref="JsonWriter"/>.
+        /// </summary>
+        /// <param name="jsonWriter">The <see cref="JsonWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="objectType">
+        /// The type of the value being serialized.
+        /// This parameter is used when <see cref="JsonSerializer.TypeNameHandling"/> is <see cref="Json.TypeNameHandling.Auto"/> to write out the type name if the type of the value does not match.
+        /// Specifying the type is optional.
+        /// </param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(JsonWriter jsonWriter, object value, Type objectType, object other)
+        {
+	        SerializeDiffInternal(jsonWriter, value, objectType, other);
+        }
+
+        /// <summary>
+        /// Serializes the specified <see cref="Object"/> difference to the other object of the same type. Writes the JSON structure using the specified <see cref="TextWriter"/>.
+        /// </summary>
+        /// <param name="textWriter">The <see cref="TextWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="objectType">
+        /// The type of the value being serialized.
+        /// This parameter is used when <see cref="TypeNameHandling"/> is Auto to write out the type name if the type of the value does not match.
+        /// Specifying the type is optional.
+        /// </param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(TextWriter textWriter, object value, Type objectType, object other)
+        {
+	        SerializeDiff(new JsonTextWriter(textWriter), value, objectType, other);
+        }
+
+        /// <summary>
+        /// Serializes the specified <see cref="Object"/> and writes the JSON structure
+        /// using the specified <see cref="JsonWriter"/>.
+        /// </summary>
+        /// <param name="jsonWriter">The <see cref="JsonWriter"/> used to write the JSON structure.</param>
+        /// <param name="value">The <see cref="Object"/> to serialize.</param>
+        /// <param name="other">The reference object.</param>
+        public void SerializeDiff(JsonWriter jsonWriter, object value, object other)
+        {
+	        SerializeDiffInternal(jsonWriter, value, null, other);
+        }
+
+        /// <summary>
         /// Serializes the specified <see cref="Object"/> and writes the JSON structure
         /// using the specified <see cref="TextWriter"/>.
         /// </summary>
@@ -1073,6 +1186,7 @@ namespace Newtonsoft.Json
             SerializeInternal(jsonWriter, value, null);
         }
 
+#if HAVE_TRACE_WRITER
         private TraceJsonReader CreateTraceJsonReader(JsonReader reader)
         {
             TraceJsonReader traceReader = new TraceJsonReader(reader);
@@ -1082,6 +1196,111 @@ namespace Newtonsoft.Json
             }
 
             return traceReader;
+        }
+#endif
+
+        internal virtual void SerializeDiffInternal(JsonWriter jsonWriter, object? value, Type? objectType, object? other)
+        {
+            ValidationUtils.ArgumentNotNull(jsonWriter, nameof(jsonWriter));
+
+            // set serialization options onto writer
+            Formatting? previousFormatting = null;
+            if (_formatting != null && jsonWriter.Formatting != _formatting)
+            {
+                previousFormatting = jsonWriter.Formatting;
+                jsonWriter.Formatting = _formatting.GetValueOrDefault();
+            }
+
+            DateFormatHandling? previousDateFormatHandling = null;
+            if (_dateFormatHandling != null && jsonWriter.DateFormatHandling != _dateFormatHandling)
+            {
+                previousDateFormatHandling = jsonWriter.DateFormatHandling;
+                jsonWriter.DateFormatHandling = _dateFormatHandling.GetValueOrDefault();
+            }
+
+            DateTimeZoneHandling? previousDateTimeZoneHandling = null;
+            if (_dateTimeZoneHandling != null && jsonWriter.DateTimeZoneHandling != _dateTimeZoneHandling)
+            {
+                previousDateTimeZoneHandling = jsonWriter.DateTimeZoneHandling;
+                jsonWriter.DateTimeZoneHandling = _dateTimeZoneHandling.GetValueOrDefault();
+            }
+
+            FloatFormatHandling? previousFloatFormatHandling = null;
+            if (_floatFormatHandling != null && jsonWriter.FloatFormatHandling != _floatFormatHandling)
+            {
+                previousFloatFormatHandling = jsonWriter.FloatFormatHandling;
+                jsonWriter.FloatFormatHandling = _floatFormatHandling.GetValueOrDefault();
+            }
+
+            StringEscapeHandling? previousStringEscapeHandling = null;
+            if (_stringEscapeHandling != null && jsonWriter.StringEscapeHandling != _stringEscapeHandling)
+            {
+                previousStringEscapeHandling = jsonWriter.StringEscapeHandling;
+                jsonWriter.StringEscapeHandling = _stringEscapeHandling.GetValueOrDefault();
+            }
+
+            CultureInfo? previousCulture = null;
+            if (_culture != null && !_culture.Equals(jsonWriter.Culture))
+            {
+                previousCulture = jsonWriter.Culture;
+                jsonWriter.Culture = _culture;
+            }
+
+            string? previousDateFormatString = null;
+            if (_dateFormatStringSet && jsonWriter.DateFormatString != _dateFormatString)
+            {
+                previousDateFormatString = jsonWriter.DateFormatString;
+                jsonWriter.DateFormatString = _dateFormatString;
+            }
+
+#if HAVE_TRACE_WRITER
+	        TraceJsonWriter traceJsonWriter = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
+		        ? new TraceJsonWriter(jsonWriter)
+				: null;
+	        var tWriter = traceJsonWriter ?? jsonWriter;
+#else
+            var tWriter = jsonWriter;
+#endif
+
+            JsonSerializerInternalWriter serializerWriter = new JsonSerializerInternalWriter(this);
+            serializerWriter.SerializeDiff(tWriter, value, objectType, other);
+
+#if HAVE_TRACE_WRITER
+			if (traceJsonWriter != null)
+            {
+                TraceWriter.Trace(TraceLevel.Verbose, traceJsonWriter.GetSerializedJsonMessage(), null);
+            }
+#endif
+
+            // reset writer back to previous options
+            if (previousFormatting != null)
+            {
+                jsonWriter.Formatting = previousFormatting.GetValueOrDefault();
+            }
+            if (previousDateFormatHandling != null)
+            {
+                jsonWriter.DateFormatHandling = previousDateFormatHandling.GetValueOrDefault();
+            }
+            if (previousDateTimeZoneHandling != null)
+            {
+                jsonWriter.DateTimeZoneHandling = previousDateTimeZoneHandling.GetValueOrDefault();
+            }
+            if (previousFloatFormatHandling != null)
+            {
+                jsonWriter.FloatFormatHandling = previousFloatFormatHandling.GetValueOrDefault();
+            }
+            if (previousStringEscapeHandling != null)
+            {
+                jsonWriter.StringEscapeHandling = previousStringEscapeHandling.GetValueOrDefault();
+            }
+            if (_dateFormatStringSet)
+            {
+                jsonWriter.DateFormatString = previousDateFormatString;
+            }
+            if (previousCulture != null)
+            {
+                jsonWriter.Culture = previousCulture;
+            }
         }
 
         internal virtual void SerializeInternal(JsonWriter jsonWriter, object? value, Type? objectType)
@@ -1138,17 +1357,24 @@ namespace Newtonsoft.Json
                 jsonWriter.DateFormatString = _dateFormatString;
             }
 
+#if HAVE_TRACE_WRITER
             TraceJsonWriter? traceJsonWriter = (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 ? new TraceJsonWriter(jsonWriter)
                 : null;
+	        var tWriter = traceJsonWriter ?? jsonWriter;
+#else
+			var tWriter = jsonWriter;
+#endif
 
             JsonSerializerInternalWriter serializerWriter = new JsonSerializerInternalWriter(this);
-            serializerWriter.Serialize(traceJsonWriter ?? jsonWriter, value, objectType);
+            serializerWriter.Serialize(tWriter, value, objectType);
 
+#if HAVE_TRACE_WRITER
             if (traceJsonWriter != null)
             {
                 TraceWriter!.Trace(TraceLevel.Verbose, traceJsonWriter.GetSerializedJsonMessage(), null);
             }
+#endif
 
             // reset writer back to previous options
             if (previousFormatting != null)

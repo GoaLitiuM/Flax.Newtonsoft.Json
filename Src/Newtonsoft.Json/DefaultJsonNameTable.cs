@@ -53,6 +53,13 @@ namespace Newtonsoft.Json
             _entries = new Entry[_mask + 1];
         }
 
+        public void Clear()
+        {
+            _count = 0;
+            _mask = 31;
+            _entries = new Entry[_mask + 1];
+        }
+
         /// <summary>
         /// Gets a string containing the same characters as the specified range of characters in the given array.
         /// </summary>

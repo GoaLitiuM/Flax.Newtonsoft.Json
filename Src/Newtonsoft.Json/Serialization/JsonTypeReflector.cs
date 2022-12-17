@@ -39,7 +39,9 @@ using Newtonsoft.Json.Utilities.LinqBridge;
 #else
 using System.Linq;
 #endif
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 
 namespace Newtonsoft.Json.Serialization
 {
@@ -66,6 +68,15 @@ namespace Newtonsoft.Json.Serialization
         private static readonly ThreadSafeStore<Type, Type?> AssociatedMetadataTypesCache = new ThreadSafeStore<Type, Type?>(GetAssociateMetadataTypeFromAttribute);
         private static ReflectionObject? _metadataTypeAttributeReflectionObject;
 #endif
+
+	    internal static void ClearCache()
+	    {
+		    CreatorCache.Clear();
+#if !(NET20 || DOTNET)
+		    AssociatedMetadataTypesCache.Clear();
+		    _metadataTypeAttributeReflectionObject?.Clear();
+#endif
+	    }
 
         public static T? GetCachedAttribute<T>(object attributeProvider) where T : Attribute
         {
@@ -96,7 +107,7 @@ namespace Newtonsoft.Json.Serialization
         }
 #endif
 
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
         public static DataContractAttribute? GetDataContractAttribute(Type type)
         {
             // DataContractAttribute does not have inheritance
@@ -160,7 +171,7 @@ namespace Newtonsoft.Json.Serialization
                 return objectAttribute.MemberSerialization;
             }
 
-#if HAVE_DATA_CONTRACTS
+#if HAVE_DATA_CONTRACTS && HAVE_RUNTIME_SERIALIZATION
             DataContractAttribute? dataContractAttribute = GetDataContractAttribute(objectType);
             if (dataContractAttribute != null)
             {
@@ -519,10 +530,12 @@ namespace Newtonsoft.Json.Serialization
             get
             {
 #if !(PORTABLE40 || PORTABLE || DOTNET || NETSTANDARD2_0)
+#if HAVE_REFLECTION_EMIT
                 if (DynamicCodeGeneration)
                 {
                     return DynamicReflectionDelegateFactory.Instance;
                 }
+#endif
 
                 return LateBoundReflectionDelegateFactory.Instance;
 #else

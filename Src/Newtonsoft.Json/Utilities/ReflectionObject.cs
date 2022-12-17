@@ -72,6 +72,11 @@ namespace Newtonsoft.Json.Utilities
             return Members[member].MemberType!;
         }
 
+	    public void Clear()
+	    {
+		    Members.Clear();
+		}
+
         public static ReflectionObject Create(Type t, params string[] memberNames)
         {
             return Create(t, null, memberNames);

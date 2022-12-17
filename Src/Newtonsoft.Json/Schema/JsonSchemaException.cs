@@ -24,7 +24,9 @@
 #endregion
 
 using System;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 
 #nullable disable
 
@@ -90,7 +92,7 @@ namespace Newtonsoft.Json.Schema
         {
         }
 
-#if HAVE_BINARY_EXCEPTION_SERIALIZATION
+#if HAVE_BINARY_EXCEPTION_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Initializes a new instance of the <see cref="JsonSchemaException"/> class.
         /// </summary>

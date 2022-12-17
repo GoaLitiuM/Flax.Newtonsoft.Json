@@ -38,7 +38,10 @@ namespace Newtonsoft.Json.Utilities
 {
     internal delegate T Creator<T>();
 
-    internal static class MiscellaneousUtils
+    /// <summary>
+    /// Helper utilities.
+    /// </summary>
+    public static class MiscellaneousUtils
     {
         [Conditional("DEBUG")]
         public static void Assert([DoesNotReturnIf(false)] bool condition, string? message = null)
@@ -46,6 +49,12 @@ namespace Newtonsoft.Json.Utilities
             Debug.Assert(condition, message);
         }
 
+        /// <summary>
+        /// The default implementation of the values comparision function.
+        /// </summary>
+        /// <param name="objA">The object a.</param>
+        /// <param name="objB">The object b.</param>
+        /// <returns>True if both objects are equal, otherwise false.</returns>
         public static bool ValueEquals(object? objA, object? objB)
         {
             if (objA == objB)
@@ -73,6 +82,24 @@ namespace Newtonsoft.Json.Utilities
                 {
                     return false;
                 }
+            }
+
+            // Diff on collections
+            if (objA is IList aList && objB is IList bList)
+            {
+	            if (aList.Count != bList.Count)
+		            return false;
+            }
+            if (objA is IEnumerable aEnumerable && objB is IEnumerable bEnumerable)
+            {
+	            var aEnumerator = aEnumerable.GetEnumerator();
+	            var bEnumerator = bEnumerable.GetEnumerator();
+	            while (aEnumerator.MoveNext())
+	            {
+		            if (!bEnumerator.MoveNext() || !ValueEquals(aEnumerator.Current, bEnumerator.Current))
+			            return false;
+	            }
+	            return !bEnumerator.MoveNext();
             }
 
             return objA.Equals(objB);

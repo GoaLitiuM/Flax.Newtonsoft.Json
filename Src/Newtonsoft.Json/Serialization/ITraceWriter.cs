@@ -1,4 +1,5 @@
-﻿using System;
+#if HAVE_TRACE_WRITER
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -26,3 +27,4 @@ namespace Newtonsoft.Json.Serialization
         void Trace(TraceLevel level, string message, Exception? ex);
     }
 }
+#endif

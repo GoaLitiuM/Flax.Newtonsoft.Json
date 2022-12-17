@@ -259,6 +259,11 @@ namespace Newtonsoft.Json.Utilities
         private static readonly ThreadSafeStore<StructMultiKey<Type, Type>, Func<object?, object?>?> CastConverters =
             new ThreadSafeStore<StructMultiKey<Type, Type>, Func<object?, object?>?>(CreateCastConverter);
 
+	    internal static void ClearCache()
+	    {
+		    CastConverters.Clear();
+		}
+
         private static Func<object?, object?>? CreateCastConverter(StructMultiKey<Type, Type> t)
         {
             Type initialType = t.Value1;

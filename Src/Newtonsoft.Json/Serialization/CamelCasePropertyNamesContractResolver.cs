@@ -51,6 +51,15 @@ namespace Newtonsoft.Json.Serialization
             };
         }
 
+	    internal static void ClearStaticCache()
+	    {
+		    NameTable.Clear();
+		    lock (TypeContractCacheLock)
+		    {
+			    _contractCache?.Clear();
+		    }
+	    }
+  
         /// <summary>
         /// Resolves the contract for a given type.
         /// </summary>

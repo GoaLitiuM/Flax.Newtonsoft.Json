@@ -27,7 +27,9 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Utilities;
 
@@ -46,6 +48,8 @@ namespace Newtonsoft.Json.Serialization
         Linq = 8
     }
 
+#if HAVE_RUNTIME_SERIALIZATION
+
     /// <summary>
     /// Handles <see cref="JsonSerializer"/> serialization callback events.
     /// </summary>
@@ -60,6 +64,8 @@ namespace Newtonsoft.Json.Serialization
     /// <param name="context">The streaming context.</param>
     /// <param name="errorContext">The error context.</param>
     public delegate void SerializationErrorCallback(object o, StreamingContext context, ErrorContext errorContext);
+
+#endif
 
     /// <summary>
     /// Sets extension data for an object during deserialization.
@@ -90,11 +96,13 @@ namespace Newtonsoft.Json.Serialization
         internal bool IsSealed;
         internal bool IsInstantiable;
 
+#if HAVE_RUNTIME_SERIALIZATION
         private List<SerializationCallback>? _onDeserializedCallbacks;
         private List<SerializationCallback>? _onDeserializingCallbacks;
         private List<SerializationCallback>? _onSerializedCallbacks;
         private List<SerializationCallback>? _onSerializingCallbacks;
         private List<SerializationErrorCallback>? _onErrorCallbacks;
+#endif
         private Type _createdType;
 
         /// <summary>
@@ -139,6 +147,7 @@ namespace Newtonsoft.Json.Serialization
         /// </summary>
         public JsonConverter? InternalConverter { get; internal set; }
 
+#if HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Gets or sets all methods called immediately after deserialization of the object.
         /// </summary>
@@ -223,6 +232,7 @@ namespace Newtonsoft.Json.Serialization
                 return _onErrorCallbacks;
             }
         }
+#endif
 
         /// <summary>
         /// Gets or sets the default creator method used to create the object.
@@ -258,6 +268,7 @@ namespace Newtonsoft.Json.Serialization
             InternalReadType = ReadType.Read;
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         internal void InvokeOnSerializing(object o, StreamingContext context)
         {
             if (_onSerializingCallbacks != null)
@@ -322,5 +333,6 @@ namespace Newtonsoft.Json.Serialization
         {
             return (o, context, econtext) => callbackMethodInfo.Invoke(o, new object[] { context, econtext });
         }
+#endif
     }
 }

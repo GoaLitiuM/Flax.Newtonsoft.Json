@@ -46,6 +46,33 @@ namespace Newtonsoft.Json.Utilities
 #endif
         private readonly Func<TKey, TValue> _creator;
 
+	    public int Count
+	    {
+		    get
+		    {
+#if HAVE_CONCURRENT_DICTIONARY
+			    return _concurrentStore.Count;
+#else
+				lock (_lock)
+				{
+					return _store.Count;	
+				}
+#endif
+			}
+		}
+
+	    public void Clear()
+	    {
+#if HAVE_CONCURRENT_DICTIONARY
+            _concurrentStore.Clear();
+#else
+            lock (_lock)
+            {
+                _store.Clear();
+            }
+#endif
+		}
+
         public ThreadSafeStore(Func<TKey, TValue> creator)
         {
             ValidationUtils.ArgumentNotNull(creator, nameof(creator));

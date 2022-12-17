@@ -45,6 +45,11 @@ namespace Newtonsoft.Json.Converters
 
         private static ReflectionObject? _reflectionObject;
 
+	    internal static void ClearCache()
+	    {
+		    _reflectionObject?.Clear();
+	    }
+
         /// <summary>
         /// Writes the JSON representation of the object.
         /// </summary>

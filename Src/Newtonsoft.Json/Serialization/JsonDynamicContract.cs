@@ -54,6 +54,13 @@ namespace Newtonsoft.Json.Serialization
         private readonly ThreadSafeStore<string, CallSite<Func<CallSite, object, object?, object>>> _callSiteSetters =
             new ThreadSafeStore<string, CallSite<Func<CallSite, object, object?, object>>>(CreateCallSiteSetter);
 
+	    private static event Action ClearCacheEvent;
+
+		internal static void ClearCache()
+	    {
+			ClearCacheEvent?.Invoke();
+	    }
+
         private static CallSite<Func<CallSite, object, object>> CreateCallSiteGetter(string name)
         {
             GetMemberBinder getMemberBinder = (GetMemberBinder)DynamicUtils.BinderWrapper.GetMember(name, typeof(DynamicUtils));
@@ -78,7 +85,20 @@ namespace Newtonsoft.Json.Serialization
             ContractType = JsonContractType.Dynamic;
 
             Properties = new JsonPropertyCollection(UnderlyingType);
+
+            ClearCacheEvent += OnClearCache;
         }
+
+	    private void OnClearCache()
+	    {
+		    _callSiteGetters.Clear();
+		    _callSiteSetters.Clear();
+		}
+
+	    ~JsonDynamicContract()
+	    {
+		    ClearCacheEvent -= OnClearCache;
+		}
 
         internal bool TryGetMember(IDynamicMetaObjectProvider dynamicProvider, string name, out object? value)
         {

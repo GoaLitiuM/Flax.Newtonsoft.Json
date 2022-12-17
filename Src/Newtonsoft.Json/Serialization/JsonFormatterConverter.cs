@@ -23,7 +23,7 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
 using System;
 using System.Globalization;
 using System.Runtime.Serialization;

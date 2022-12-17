@@ -37,7 +37,9 @@ using System.Globalization;
 using System.Numerics;
 #endif
 using System.Reflection;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Utilities;
 using System.Runtime.CompilerServices;
@@ -50,7 +52,7 @@ using System.Linq;
 
 namespace Newtonsoft.Json.Serialization
 {
-    internal class JsonSerializerInternalReader : JsonSerializerInternalBase
+    public class JsonSerializerInternalReader : JsonSerializerInternalBase
     {
         internal enum PropertyPresence
         {
@@ -541,6 +543,7 @@ namespace Newtonsoft.Json.Serialization
                                 throw JsonSerializationException.Create(reader, "Cannot preserve reference to readonly dictionary, or dictionary created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                             }
 
+#if HAVE_RUNTIME_SERIALIZATION
                             if (contract.OnSerializingCallbacks.Count > 0)
                             {
                                 throw JsonSerializationException.Create(reader, "Cannot call OnSerializing on readonly dictionary, or dictionary created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
@@ -550,6 +553,7 @@ namespace Newtonsoft.Json.Serialization
                             {
                                 throw JsonSerializationException.Create(reader, "Cannot call OnError on readonly list, or dictionary created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                             }
+#endif
 
                             if (!dictionaryContract.HasParameterizedCreatorInternal)
                             {
@@ -584,7 +588,7 @@ namespace Newtonsoft.Json.Serialization
                     JsonDynamicContract dynamicContract = (JsonDynamicContract)contract;
                     return CreateDynamic(reader, dynamicContract, member, id);
 #endif
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
                 case JsonContractType.Serializable:
                     JsonISerializableContract serializableContract = (JsonISerializableContract)contract;
                     return CreateISerializable(reader, serializableContract, member, id);
@@ -628,10 +632,12 @@ namespace Newtonsoft.Json.Serialization
 
                         newValue = Serializer.GetReferenceResolver().ResolveReference(this, reference);
 
+#if HAVE_TRACE_WRITER
                         if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                         {
                             TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader, reader.Path, "Resolved object reference '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, reference, newValue.GetType())), null);
                         }
+#endif
 
                         reader.Skip();
                         return true;
@@ -725,10 +731,12 @@ namespace Newtonsoft.Json.Serialization
 
                                 newValue = Serializer.GetReferenceResolver().ResolveReference(this, reference);
 
+#if HAVE_TRACE_WRITER
                                 if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                                 {
                                     TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Resolved object reference '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, reference, newValue!.GetType())), null);
                                 }
+#endif
 
                                 return true;
                             }
@@ -802,10 +810,12 @@ namespace Newtonsoft.Json.Serialization
                     throw JsonSerializationException.Create(reader, "Type specified in JSON '{0}' was not resolved.".FormatWith(CultureInfo.InvariantCulture, qualifiedTypeName));
                 }
 
+#if HAVE_TRACE_WRITER
                 if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 {
                     TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Resolved type '{0}' to {1}.".FormatWith(CultureInfo.InvariantCulture, qualifiedTypeName, specifiedType)), null);
                 }
+#endif
 
                 if (objectType != null
 #if HAVE_DYNAMIC
@@ -865,6 +875,7 @@ namespace Newtonsoft.Json.Serialization
                         throw JsonSerializationException.Create(reader, "Cannot preserve reference to array or readonly list, or list created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                     }
 
+#if HAVE_RUNTIME_SERIALIZATION
                     if (contract.OnSerializingCallbacks.Count > 0)
                     {
                         throw JsonSerializationException.Create(reader, "Cannot call OnSerializing on an array or readonly list, or list created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
@@ -874,6 +885,7 @@ namespace Newtonsoft.Json.Serialization
                     {
                         throw JsonSerializationException.Create(reader, "Cannot call OnError on an array or readonly list, or list created from a non-default constructor: {0}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType));
                     }
+#endif
 
                     if (!arrayContract.HasParameterizedCreatorInternal && !arrayContract.IsArray)
                     {
@@ -1062,10 +1074,12 @@ namespace Newtonsoft.Json.Serialization
 
                 if (property.SetIsSpecified != null)
                 {
+#if HAVE_TRACE_WRITER
                     if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                     {
                         TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "IsSpecified for property '{0}' on {1} set to true.".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType)), null);
                     }
+#endif
 
                     property.SetIsSpecified(target, true);
                 }
@@ -1129,10 +1143,12 @@ namespace Newtonsoft.Json.Serialization
 
             if (!property.Writable && !useExistingValue)
             {
+#if HAVE_TRACE_WRITER
                 if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
                 {
                     TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Unable to deserialize value to non-writable property '{0}' on {1}.".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType)), null);
                 }
+#endif
 
                 return true;
             }
@@ -1175,10 +1191,12 @@ namespace Newtonsoft.Json.Serialization
         {
             try
             {
+#if HAVE_TRACE_WRITER
                 if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                 {
                     TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Read object reference Id '{0}' for {1}.".FormatWith(CultureInfo.InvariantCulture, id, value.GetType())), null);
                 }
+#endif
 
                 Serializer.GetReferenceResolver().AddReference(this, id, value);
             }
@@ -1333,22 +1351,30 @@ namespace Newtonsoft.Json.Serialization
 
         private void OnDeserializing(JsonReader reader, JsonContract contract, object value)
         {
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
 
+#endif
+#if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnDeserializing(value, Serializer._context);
+#endif
         }
 
         private void OnDeserialized(JsonReader reader, JsonContract contract, object value)
         {
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0}".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
 
+#endif
+#if HAVE_RUNTIME_SERIALIZATION
             contract.InvokeOnDeserialized(value, Serializer._context);
+#endif
         }
 
         private object PopulateDictionary(IDictionary dictionary, JsonReader reader, JsonDictionaryContract contract, JsonProperty? containerProperty, string? id)
@@ -1376,6 +1402,9 @@ namespace Newtonsoft.Json.Serialization
 
             JsonConverter? dictionaryValueConverter = contract.ItemConverter ?? GetConverter(contract.ItemContract, null, contract, containerProperty);
             PrimitiveTypeCode keyTypeCode = (contract.KeyContract is JsonPrimitiveContract keyContract) ? keyContract.TypeCode : PrimitiveTypeCode.Empty;
+
+            // Match Flax C++ deserialization rules to populate collection from scratch
+            dictionary.Clear();
 
             bool finished = false;
             do
@@ -1654,6 +1683,12 @@ namespace Newtonsoft.Json.Serialization
 
             int? previousErrorIndex = null;
 
+            if (!contract.IsArray)
+            {
+                // Match Flax C++ deserialization rules to populate collection from scratch
+                list.Clear();
+            }
+
             bool finished = false;
             do
             {
@@ -1725,7 +1760,7 @@ namespace Newtonsoft.Json.Serialization
 #pragma warning restore CS8600, CS8602, CS8603, CS8604
         }
 
-#if HAVE_BINARY_SERIALIZATION
+#if HAVE_BINARY_SERIALIZATION && HAVE_RUNTIME_SERIALIZATION
         private object CreateISerializable(JsonReader reader, JsonISerializableContract contract, JsonProperty? member, string? id)
         {
             Type objectType = contract.UnderlyingType;
@@ -1739,10 +1774,12 @@ namespace Newtonsoft.Json.Serialization
                 throw JsonSerializationException.Create(reader, message);
             }
 
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Deserializing {0} using ISerializable constructor.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType)), null);
             }
+#endif
 
             SerializationInfo serializationInfo = new SerializationInfo(contract.UnderlyingType, new JsonFormatterConverter(this, contract, member));
 
@@ -1957,6 +1994,7 @@ namespace Newtonsoft.Json.Serialization
 
             Type objectType = contract.UnderlyingType;
 
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 string parameters = string.Join(", ", contract.CreatorParameters.Select(p => p.PropertyName)
@@ -1966,6 +2004,7 @@ namespace Newtonsoft.Json.Serialization
                     );
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Deserializing {0} using creator with parameters: {1}.".FormatWith(CultureInfo.InvariantCulture, contract.UnderlyingType, parameters)), null);
             }
+#endif
 
             List<CreatorPropertyContext> propertyContexts = ResolvePropertyAndCreatorValues(contract, containerProperty, reader, objectType);
             if (trackPresence)
@@ -2184,17 +2223,21 @@ namespace Newtonsoft.Json.Serialization
 
         private object? DeserializeConvertable(JsonConverter converter, JsonReader reader, Type objectType, object? existingValue)
         {
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Started deserializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, objectType, converter.GetType())), null);
             }
+#endif
 
             object? value = converter.ReadJson(reader, objectType, existingValue, GetInternalSerializer());
 
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Info)
             {
                 TraceWriter.Trace(TraceLevel.Info, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Finished deserializing {0} with converter {1}.".FormatWith(CultureInfo.InvariantCulture, objectType, converter.GetType())), null);
             }
+#endif
 
             return value;
         }
@@ -2260,10 +2303,12 @@ namespace Newtonsoft.Json.Serialization
                                 throw JsonSerializationException.Create(reader, "Unexpected end when setting {0}'s value.".FormatWith(CultureInfo.InvariantCulture, memberName));
                             }
 
+#if HAVE_TRACE_WRITER
                             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                             {
                                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Could not find member '{0}' on {1}.".FormatWith(CultureInfo.InvariantCulture, memberName, contract.UnderlyingType)), null);
                             }
+#endif
 
                             if ((contract.MissingMemberHandling ?? Serializer._missingMemberHandling) == MissingMemberHandling.Error)
                             {
@@ -2379,10 +2424,12 @@ namespace Newtonsoft.Json.Serialization
 
                             if (property == null)
                             {
+#if HAVE_TRACE_WRITER
                                 if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
                                 {
                                     TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(reader as IJsonLineInfo, reader.Path, "Could not find member '{0}' on {1}".FormatWith(CultureInfo.InvariantCulture, propertyName, contract.UnderlyingType)), null);
                                 }
+#endif
 
                                 if ((contract.MissingMemberHandling ?? Serializer._missingMemberHandling) == MissingMemberHandling.Error)
                                 {
@@ -2484,10 +2531,12 @@ namespace Newtonsoft.Json.Serialization
 
             bool shouldDeserialize = property.ShouldDeserialize(target);
 
+#if HAVE_TRACE_WRITER
             if (TraceWriter != null && TraceWriter.LevelFilter >= TraceLevel.Verbose)
             {
                 TraceWriter.Trace(TraceLevel.Verbose, JsonPosition.FormatMessage(null, reader.Path, "ShouldDeserialize result for property '{0}' on {1}: {2}".FormatWith(CultureInfo.InvariantCulture, property.PropertyName, property.DeclaringType, shouldDeserialize)), null);
             }
+#endif
 
             return shouldDeserialize;
         }

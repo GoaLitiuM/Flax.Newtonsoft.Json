@@ -1,3 +1,5 @@
+### Custom fork of Json.NET for [Flax Engine](http://www.flaxengine.com)
+
 # ![Logo](Doc/icons/logo.jpg) Json.NET
 
 [![NuGet version (Newtonsoft.Json)](https://img.shields.io/nuget/v/Newtonsoft.Json.svg?style=flat-square)](https://www.nuget.org/packages/Newtonsoft.Json/)

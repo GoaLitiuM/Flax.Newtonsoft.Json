@@ -29,7 +29,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json.Serialization;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using System.Diagnostics;
 using System.Runtime;
 #if !HAVE_LINQ
@@ -54,7 +56,9 @@ namespace Newtonsoft.Json
         internal const ConstructorHandling DefaultConstructorHandling = ConstructorHandling.Default;
         internal const TypeNameHandling DefaultTypeNameHandling = TypeNameHandling.None;
         internal const MetadataPropertyHandling DefaultMetadataPropertyHandling = MetadataPropertyHandling.Default;
+#if HAVE_RUNTIME_SERIALIZATION
         internal static readonly StreamingContext DefaultContext;
+#endif
 
         internal const Formatting DefaultFormatting = Formatting.None;
         internal const DateFormatHandling DefaultDateFormatHandling = DateFormatHandling.IsoDateFormat;
@@ -89,7 +93,9 @@ namespace Newtonsoft.Json
         internal ObjectCreationHandling? _objectCreationHandling;
         internal MissingMemberHandling? _missingMemberHandling;
         internal ReferenceLoopHandling? _referenceLoopHandling;
+#if HAVE_RUNTIME_SERIALIZATION
         internal StreamingContext? _context;
+#endif
         internal ConstructorHandling? _constructorHandling;
         internal TypeNameHandling? _typeNameHandling;
         internal MetadataPropertyHandling? _metadataPropertyHandling;
@@ -262,11 +268,13 @@ namespace Newtonsoft.Json
         /// <value>A function that creates the <see cref="IReferenceResolver"/> used by the serializer when resolving references.</value>
         public Func<IReferenceResolver?>? ReferenceResolverProvider { get; set; }
 
+#if HAVE_TRACE_WRITER
         /// <summary>
         /// Gets or sets the <see cref="ITraceWriter"/> used by the serializer when writing trace messages.
         /// </summary>
         /// <value>The trace writer.</value>
         public ITraceWriter? TraceWriter { get; set; }
+#endif
 
         /// <summary>
         /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
@@ -304,6 +312,7 @@ namespace Newtonsoft.Json
         /// <value>The error handler called during serialization and deserialization.</value>
         public EventHandler<ErrorEventArgs>? Error { get; set; }
 
+#if HAVE_RUNTIME_SERIALIZATION
         /// <summary>
         /// Gets or sets the <see cref="StreamingContext"/> used by the serializer when invoking serialization callback methods.
         /// </summary>
@@ -313,6 +322,7 @@ namespace Newtonsoft.Json
             get => _context ?? DefaultContext;
             set => _context = value;
         }
+#endif
 
         /// <summary>
         /// Gets or sets how <see cref="DateTime"/> and <see cref="DateTimeOffset"/> values are formatted when writing JSON text,
@@ -446,7 +456,9 @@ namespace Newtonsoft.Json
 
         static JsonSerializerSettings()
         {
+#if HAVE_RUNTIME_SERIALIZATION
             DefaultContext = new StreamingContext();
+#endif
             DefaultCulture = CultureInfo.InvariantCulture;
         }
 
@@ -478,7 +490,9 @@ namespace Newtonsoft.Json
             _context = original._context;
             Error = original.Error;
             SerializationBinder = original.SerializationBinder;
+#if HAVE_TRACE_WRITER
             TraceWriter = original.TraceWriter;
+#endif
             _culture = original._culture;
             ReferenceResolverProvider = original.ReferenceResolverProvider;
             EqualityComparer = original.EqualityComparer;

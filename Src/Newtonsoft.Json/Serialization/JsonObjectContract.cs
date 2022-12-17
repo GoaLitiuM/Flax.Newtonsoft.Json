@@ -26,7 +26,9 @@
 using System;
 using System.Globalization;
 using System.Reflection;
+#if HAVE_RUNTIME_SERIALIZATION
 using System.Runtime.Serialization;
+#endif
 using System.Security;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Utilities;
@@ -180,7 +182,7 @@ namespace Newtonsoft.Json.Serialization
             Properties = new JsonPropertyCollection(UnderlyingType);
         }
 
-#if HAVE_BINARY_FORMATTER
+#if HAVE_BINARY_FORMATTER && HAVE_RUNTIME_SERIALIZATION
 #if HAVE_SECURITY_SAFE_CRITICAL_ATTRIBUTE
         [SecuritySafeCritical]
 #endif

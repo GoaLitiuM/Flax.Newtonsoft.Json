@@ -23,6 +23,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+#if HAVE_RUNTIME_SERIALIZATION
+
 using System;
 using System.Runtime.Serialization;
 
@@ -57,3 +59,5 @@ namespace Newtonsoft.Json.Serialization
         }
     }
 }
+
+#endif

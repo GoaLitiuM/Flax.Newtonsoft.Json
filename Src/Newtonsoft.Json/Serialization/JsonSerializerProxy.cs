@@ -26,13 +26,15 @@
 using System;
 using System.Collections;
 using System.Globalization;
-using System.Runtime.Serialization.Formatters;
 using Newtonsoft.Json.Utilities;
+#if HAVE_RUNTIME_SERIALIZATION
+using System.Runtime.Serialization.Formatters;
 using System.Runtime.Serialization;
+#endif
 
 namespace Newtonsoft.Json.Serialization
 {
-    internal class JsonSerializerProxy : JsonSerializer
+    public class JsonSerializerProxy : JsonSerializer
     {
         private readonly JsonSerializerInternalReader? _serializerReader;
         private readonly JsonSerializerInternalWriter? _serializerWriter;
@@ -50,11 +52,13 @@ namespace Newtonsoft.Json.Serialization
             set => _serializer.ReferenceResolver = value;
         }
 
+#if HAVE_TRACE_WRITER
         public override ITraceWriter? TraceWriter
         {
             get => _serializer.TraceWriter;
             set => _serializer.TraceWriter = value;
         }
+#endif
 
         public override IEqualityComparer? EqualityComparer
         {
@@ -118,13 +122,6 @@ namespace Newtonsoft.Json.Serialization
             set => _serializer.MetadataPropertyHandling = value;
         }
 
-        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
-        public override FormatterAssemblyStyle TypeNameAssemblyFormat
-        {
-            get => _serializer.TypeNameAssemblyFormat;
-            set => _serializer.TypeNameAssemblyFormat = value;
-        }
-
         public override TypeNameAssemblyFormatHandling TypeNameAssemblyFormatHandling
         {
             get => _serializer.TypeNameAssemblyFormatHandling;
@@ -136,25 +133,20 @@ namespace Newtonsoft.Json.Serialization
             get => _serializer.ConstructorHandling;
             set => _serializer.ConstructorHandling = value;
         }
-
-        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
-        public override SerializationBinder Binder
-        {
-            get => _serializer.Binder;
-            set => _serializer.Binder = value;
-        }
-
+        
         public override ISerializationBinder SerializationBinder
         {
             get => _serializer.SerializationBinder;
             set => _serializer.SerializationBinder = value;
         }
 
+#if HAVE_RUNTIME_SERIALIZATION
         public override StreamingContext Context
         {
             get => _serializer.Context;
             set => _serializer.Context = value;
         }
+#endif
 
         public override Formatting Formatting
         {
@@ -233,7 +225,7 @@ namespace Newtonsoft.Json.Serialization
                 return _serializerWriter!;
             }
         }
-
+        
         public JsonSerializerProxy(JsonSerializerInternalReader serializerReader)
         {
             ValidationUtils.ArgumentNotNull(serializerReader, nameof(serializerReader));

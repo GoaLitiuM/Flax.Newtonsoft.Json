@@ -1,5 +1,5 @@
-﻿
-#if !HAVE_TRACE_WRITER
+
+#if !HAVE_TRACE_WRITER && false
 using Newtonsoft.Json.Serialization;
 
 namespace Newtonsoft.Json
