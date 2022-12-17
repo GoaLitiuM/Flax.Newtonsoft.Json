@@ -201,18 +201,6 @@ namespace Newtonsoft.Json
 
         /// <summary>
         /// Gets or sets how a type name assembly is written and resolved by the serializer.
-        /// The default value is <see cref="FormatterAssemblyStyle.Simple" />.
-        /// </summary>
-        /// <value>The type name assembly format.</value>
-        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
-        public FormatterAssemblyStyle TypeNameAssemblyFormat
-        {
-            get => (FormatterAssemblyStyle)TypeNameAssemblyFormatHandling;
-            set => TypeNameAssemblyFormatHandling = (TypeNameAssemblyFormatHandling)value;
-        }
-
-        /// <summary>
-        /// Gets or sets how a type name assembly is written and resolved by the serializer.
         /// The default value is <see cref="Json.TypeNameAssemblyFormatHandling.Simple" />.
         /// </summary>
         /// <value>The type name assembly format.</value>
@@ -247,22 +235,6 @@ namespace Newtonsoft.Json
         public IEqualityComparer? EqualityComparer { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="IReferenceResolver"/> used by the serializer when resolving references.
-        /// </summary>
-        /// <value>The reference resolver.</value>
-        [Obsolete("ReferenceResolver property is obsolete. Use the ReferenceResolverProvider property to set the IReferenceResolver: settings.ReferenceResolverProvider = () => resolver")]
-        public IReferenceResolver? ReferenceResolver
-        {
-            get => ReferenceResolverProvider?.Invoke();
-            set
-            {
-                ReferenceResolverProvider = (value != null)
-                    ? () => value
-                    : (Func<IReferenceResolver?>?)null;
-            }
-        }
-
-        /// <summary>
         /// Gets or sets a function that creates the <see cref="IReferenceResolver"/> used by the serializer when resolving references.
         /// </summary>
         /// <value>A function that creates the <see cref="IReferenceResolver"/> used by the serializer when resolving references.</value>
@@ -275,30 +247,6 @@ namespace Newtonsoft.Json
         /// <value>The trace writer.</value>
         public ITraceWriter? TraceWriter { get; set; }
 #endif
-
-        /// <summary>
-        /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
-        /// </summary>
-        /// <value>The binder.</value>
-        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
-        public SerializationBinder? Binder
-        {
-            get
-            {
-                if (SerializationBinder == null)
-                {
-                    return null;
-                }
-
-                if (SerializationBinder is SerializationBinderAdapter adapter)
-                {
-                    return adapter.SerializationBinder;
-                }
-
-                throw new InvalidOperationException("Cannot get SerializationBinder because an ISerializationBinder was previously set.");
-            }
-            set => SerializationBinder = value == null ? null : new SerializationBinderAdapter(value);
-        }
 
         /// <summary>
         /// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
@@ -487,7 +435,9 @@ namespace Newtonsoft.Json
             _maxDepthSet = original._maxDepthSet;
             _dateFormatString = original._dateFormatString;
             _dateFormatStringSet = original._dateFormatStringSet;
+#if HAVE_RUNTIME_SERIALIZATION
             _context = original._context;
+#endif
             Error = original.Error;
             SerializationBinder = original.SerializationBinder;
 #if HAVE_TRACE_WRITER

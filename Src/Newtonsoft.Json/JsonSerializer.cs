@@ -107,37 +107,6 @@ namespace Newtonsoft.Json
                 _referenceResolver = value;
             }
         }
-        
-        /// <summary>
-        /// Gets or sets the <see cref="SerializationBinder"/> used by the serializer when resolving type names.
-        /// </summary>
-        [Obsolete("Binder is obsolete. Use SerializationBinder instead.")]
-        public virtual SerializationBinder Binder
-        {
-            get
-            {
-                if (_serializationBinder is SerializationBinder legacySerializationBinder)
-                {
-                    return legacySerializationBinder;
-                }
-
-                if (_serializationBinder is SerializationBinderAdapter adapter)
-                {
-                    return adapter.SerializationBinder;
-                }
-
-                throw new InvalidOperationException("Cannot get SerializationBinder because an ISerializationBinder was previously set.");
-            }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value), "Serialization binder cannot be null.");
-                }
-
-                _serializationBinder = value as ISerializationBinder ?? new SerializationBinderAdapter(value);
-            }
-        }
 
         /// <summary>
         /// Gets or sets the <see cref="ISerializationBinder"/> used by the serializer when resolving type names.
@@ -198,26 +167,6 @@ namespace Newtonsoft.Json
                 }
 
                 _typeNameHandling = value;
-            }
-        }
-        
-        /// <summary>
-        /// Gets or sets how a type name assembly is written and resolved by the serializer.
-        /// The default value is <see cref="FormatterAssemblyStyle.Simple" />.
-        /// </summary>
-        /// <value>The type name assembly format.</value>
-        [Obsolete("TypeNameAssemblyFormat is obsolete. Use TypeNameAssemblyFormatHandling instead.")]
-        public virtual FormatterAssemblyStyle TypeNameAssemblyFormat
-        {
-            get => (FormatterAssemblyStyle)_typeNameAssemblyFormatHandling;
-            set
-            {
-                if (value < FormatterAssemblyStyle.Simple || value > FormatterAssemblyStyle.Full)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(value));
-                }
-
-                _typeNameAssemblyFormatHandling = (TypeNameAssemblyFormatHandling)value;
             }
         }
 

@@ -67,12 +67,14 @@ namespace Newtonsoft.Json.Serialization
         // Json.NET Schema requires a property
         internal static IContractResolver Instance => _instance;
 
+#if HAVE_RUNTIME_SERIALIZATION
         private static readonly string[] BlacklistedTypeNames =
         {
             "System.IO.DriveInfo",
             "System.IO.FileInfo",
             "System.IO.DirectoryInfo"
         };
+#endif
 
         private static readonly JsonConverter[] BuiltInConverters =
         {
