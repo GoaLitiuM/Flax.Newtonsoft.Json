@@ -4,10 +4,9 @@
     <TargetFrameworks Condition="'$(LibraryFrameworks)'!=''">$(LibraryFrameworks)</TargetFrameworks>
     <LangVersion>9.0</LangVersion>
     <!-- version numbers will be updated by build -->
-    <AssemblyVersion>11.0.0.0</AssemblyVersion>
-    <FileVersion>11.0.1</FileVersion>
-    <VersionPrefix>11.0.1</VersionPrefix>
-    <VersionSuffix>beta2</VersionSuffix>
+    <AssemblyVersion>13.0.2.0</AssemblyVersion>
+    <FileVersion>13.0.2</FileVersion>
+    <VersionPrefix>13.0.2</VersionPrefix>
     <Authors>James Newton-King</Authors>
     <Company>Newtonsoft</Company>
     <Product>Json.NET</Product>
