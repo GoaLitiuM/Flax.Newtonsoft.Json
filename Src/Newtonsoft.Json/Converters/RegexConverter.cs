@@ -23,6 +23,8 @@
 // OTHER DEALINGS IN THE SOFTWARE.
 #endregion
 
+#if HAVE_REGEX
+
 using System;
 using System.Text.RegularExpressions;
 using Newtonsoft.Json.Bson;
@@ -233,3 +235,5 @@ namespace Newtonsoft.Json.Converters
         }
     }
 }
+
+#endif

@@ -149,10 +149,12 @@ namespace Newtonsoft.Json.Linq.JsonPath
                 switch (Operator)
                 {
                     case QueryOperator.RegexEquals:
+#if HAVE_REGEX
                         if (RegexEquals(leftValue, rightValue, settings))
                         {
                             return true;
                         }
+#endif
                         break;
                     case QueryOperator.Equals:
                         if (EqualsWithStringCoercion(leftValue, rightValue))
@@ -221,6 +223,7 @@ namespace Newtonsoft.Json.Linq.JsonPath
             return false;
         }
 
+#if HAVE_REGEX
         private static bool RegexEquals(JValue input, JValue pattern, JsonSelectSettings? settings)
         {
             if (input.Type != JTokenType.String || pattern.Type != JTokenType.String)
@@ -241,6 +244,7 @@ namespace Newtonsoft.Json.Linq.JsonPath
             return Regex.IsMatch((string)input.Value!, patternText, MiscellaneousUtils.GetRegexOptions(optionsText));
 #endif
         }
+#endif
 
         internal static bool EqualsWithStringCoercion(JValue value, JValue queryValue)
         {

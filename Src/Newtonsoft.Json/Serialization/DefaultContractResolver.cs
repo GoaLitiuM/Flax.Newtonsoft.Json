@@ -98,7 +98,9 @@ namespace Newtonsoft.Json.Serialization
 #pragma warning disable 618
             new BsonObjectIdConverter(),
 #pragma warning restore 618
-            new RegexConverter()
+#if HAVE_REGEX
+            new RegexConverter(),
+#endif
         };
 
         private readonly DefaultJsonNameTable _nameTable = new DefaultJsonNameTable();

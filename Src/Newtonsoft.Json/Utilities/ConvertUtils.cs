@@ -1543,6 +1543,7 @@ namespace Newtonsoft.Json.Utilities
                 throw new ArgumentNullException("s");
             }
 
+#if HAVE_REGEX
             Regex format = new Regex("^[A-Fa-f0-9]{8}-([A-Fa-f0-9]{4}-){3}[A-Fa-f0-9]{12}$");
             Match match = format.Match(s);
             if (match.Success)
@@ -1550,6 +1551,7 @@ namespace Newtonsoft.Json.Utilities
                 g = new Guid(s);
                 return true;
             }
+#endif
 
             g = Guid.Empty;
             return false;

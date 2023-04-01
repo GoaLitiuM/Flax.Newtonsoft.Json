@@ -172,6 +172,7 @@ namespace Newtonsoft.Json.Utilities
             }
         }
 
+#if HAVE_REGEX
         internal static RegexOptions GetRegexOptions(string optionsText)
         {
             RegexOptions options = RegexOptions.None;
@@ -197,5 +198,6 @@ namespace Newtonsoft.Json.Utilities
 
             return options;
         }
+#endif
     }
 }
