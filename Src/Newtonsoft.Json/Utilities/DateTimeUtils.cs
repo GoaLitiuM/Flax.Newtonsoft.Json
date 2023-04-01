@@ -25,7 +25,9 @@
 
 using System;
 using System.IO;
+#if HAVE_XML_DOCUMENT
 using System.Xml;
+#endif
 using System.Globalization;
 
 namespace Newtonsoft.Json.Utilities
@@ -58,7 +60,7 @@ namespace Newtonsoft.Json.Utilities
 #endif
         }
 
-#if !(PORTABLE40 || PORTABLE) || NETSTANDARD1_3
+#if (!(PORTABLE40 || PORTABLE) || NETSTANDARD1_3) && HAVE_XML_DOCUMENT
         public static XmlDateTimeSerializationMode ToSerializationMode(DateTimeKind kind)
         {
             switch (kind)

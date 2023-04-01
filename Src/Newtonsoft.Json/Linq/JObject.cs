@@ -29,7 +29,9 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 #endif
+#if HAVE_COMPONENT_MODEL || HAVE_INOTIFY_PROPERTY_CHANGING
 using System.ComponentModel;
+#endif
 #if HAVE_DYNAMIC
 using System.Dynamic;
 using System.Linq.Expressions;
@@ -54,7 +56,7 @@ namespace Newtonsoft.Json.Linq
     ///   <code lang="cs" source="..\Src\Newtonsoft.Json.Tests\Documentation\LinqToJsonTests.cs" region="LinqToJsonCreateParse" title="Parsing a JSON Object from Text" />
     /// </example>
     public partial class JObject : JContainer, IDictionary<string, JToken?>, INotifyPropertyChanged
-#if HAVE_COMPONENT_MODEL
+#if HAVE_COMPONENT_MODEL && HAVE_TYPE_DESCRIPTOR
         , ICustomTypeDescriptor
 #endif
 #if HAVE_INOTIFY_PROPERTY_CHANGING
@@ -738,7 +740,7 @@ namespace Newtonsoft.Json.Linq
         }
 #endif
 
-#if HAVE_COMPONENT_MODEL
+#if HAVE_COMPONENT_MODEL && HAVE_TYPE_DESCRIPTOR
         // include custom type descriptor on JObject rather than use a provider because the properties are specific to a type
 
         #region ICustomTypeDescriptor
